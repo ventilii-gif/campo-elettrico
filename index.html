@@ -537,6 +537,26 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 }
 .opt.sel { border-color: var(--accent); background: var(--accent-soft); }
 
+/* Quiz: una domanda alla volta */
+.quiz-q.qhidden { display: none; }
+.q-cat {
+  display: inline-block; font-size: .68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .6px;
+  padding: 2px 9px; border-radius: 999px; margin-right: 8px;
+}
+.q-cat.t { background: var(--accent-soft); color: var(--accent); }
+.q-cat.p { background: var(--pos-soft); color: var(--pos); }
+.quiz-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-top: 18px; flex-wrap: wrap;
+}
+.quiz-nav .q-indicator {
+  font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums;
+  flex: 1 1 auto; text-align: center; min-width: 120px;
+}
+.btn[disabled] { opacity: .4; cursor: not-allowed; }
+.btn[disabled]:hover { border-color: var(--border-2); color: var(--text); background: var(--surface-2); }
+
 /* Diagrammi SVG */
 .diagram { width: 100%; height: auto; display: block; margin: 10px auto; max-width: 520px; }
 .svg-cap { text-align: center; font-size: .84rem; color: var(--muted); margin-top: 4px; }
@@ -1813,8 +1833,8 @@ function buildQuizPane(mountId, data, mode) {
   const intro = document.createElement('p');
   intro.className = 'pane-intro';
   intro.innerHTML = mode === 'immediate'
-    ? `Quiz a correzione immediata: ogni domanda viene valutata subito, con la spiegazione. ${nTheory} domande di teoria e ${nProblems} problemi numerici.`
-    : `Rispondi a tutte le domande, poi premi «Correggi il quiz»: il punteggio e le spiegazioni compaiono solo alla fine. ${nTheory} domande di teoria e ${nProblems} problemi numerici.`;
+    ? `Quiz a correzione immediata: rispondi alla domanda mostrata e ricevi subito la valutazione, poi prosegui. Puoi tornare indietro con «Indietro». ${nTheory} domande di teoria e ${nProblems} problemi numerici.`
+    : `Rispondi alle domande scorrendole con «Avanti» e «Indietro»; poi premi «Correggi il quiz»: il punteggio e le spiegazioni compaiono solo alla fine. ${nTheory} domande di teoria e ${nProblems} problemi numerici.`;
   mount.appendChild(intro);
 
   // Barra di stato (immediato: punteggio live; finale: avanzamento)
@@ -1838,20 +1858,23 @@ function buildQuizPane(mountId, data, mode) {
     }
   }
 
-  function makeBlockTitle(txt) {
-    const h = document.createElement('div');
-    h.className = 'quiz-block-title';
-    h.textContent = txt;
-    mount.appendChild(h);
-  }
+  // Contenitore delle domande (una visibile alla volta)
+  const questionsWrap = document.createElement('div');
+  mount.appendChild(questionsWrap);
 
   let counter = 0;
+  function catBadge(cat) {
+    return cat === 'p'
+      ? '<span class="q-cat p">Problema</span>'
+      : '<span class="q-cat t">Teoria</span>';
+  }
+
   function addMC(item) {
     counter++;
     const wrap = document.createElement('div');
-    wrap.className = 'quiz-q';
+    wrap.className = 'quiz-q qhidden';
     const { options, correctIndex } = shuffleMC(item);
-    let html = `<div class="q-num">Domanda ${counter} di ${total}</div><p style="margin:.3em 0 .6em"><strong>${item.q}</strong></p>`;
+    let html = `<div class="q-num">${catBadge('t')}Domanda ${counter} di ${total}</div><p style="margin:.3em 0 .6em"><strong>${item.q}</strong></p>`;
     options.forEach((o, j) => { html += `<div class="opt" data-opt="${j}">${o}</div>`; });
     html += `<div class="q-explain"></div>`;
     wrap.innerHTML = html;
@@ -1884,21 +1907,21 @@ function buildQuizPane(mountId, data, mode) {
     }));
 
     ctx.cards.push(card);
-    mount.appendChild(wrap);
+    questionsWrap.appendChild(wrap);
   }
 
   function addNum(item) {
     counter++;
     const wrap = document.createElement('div');
-    wrap.className = 'quiz-q';
-    let html = `<div class="q-num">Domanda ${counter} di ${total}</div><p style="margin:.3em 0 .6em"><strong>${item.q}</strong></p>`;
+    wrap.className = 'quiz-q qhidden';
+    let html = `<div class="q-num">${catBadge('p')}Domanda ${counter} di ${total}</div><p style="margin:.3em 0 .6em"><strong>${item.q}</strong></p>`;
     html += `<div class="answer-row"><input type="number" step="any" placeholder="Risposta (${item.unit})">`;
     if (mode === 'immediate') html += `<button class="btn primary" type="button">Verifica</button>`;
     html += `</div><div class="q-explain"></div>`;
     wrap.innerHTML = html;
     const input = wrap.querySelector('input');
     const explain = wrap.querySelector('.q-explain');
-    const card = { type: 'num', answered: false, input, explain, item };
+    const card = { type: 'num', answered: false, wrap, input, explain, item };
 
     if (mode === 'immediate') {
       const btn = wrap.querySelector('button');
@@ -1929,19 +1952,40 @@ function buildQuizPane(mountId, data, mode) {
     }
 
     ctx.cards.push(card);
-    mount.appendChild(wrap);
+    questionsWrap.appendChild(wrap);
   }
 
-  // Blocco teoria + blocco problemi
-  makeBlockTitle('Teoria');
+  // Prima le domande di teoria, poi i problemi numerici
   data.theory.forEach(addMC);
-  makeBlockTitle('Problemi numerici');
   data.problems.forEach(addNum);
 
-  // Pulsanti in fondo
+  // Barra di navigazione tra le domande
+  const nav = document.createElement('div');
+  nav.className = 'quiz-nav';
+  nav.innerHTML = `
+    <button class="btn" type="button" data-nav="prev">← Indietro</button>
+    <span class="q-indicator"></span>
+    <button class="btn" type="button" data-nav="next">Avanti →</button>`;
+  mount.appendChild(nav);
+  const prevBtn = nav.querySelector('[data-nav="prev"]');
+  const nextBtn = nav.querySelector('[data-nav="next"]');
+  const indicator = nav.querySelector('.q-indicator');
+
+  let current = 0;
+  function show(i) {
+    current = Math.max(0, Math.min(total - 1, i));
+    ctx.cards.forEach((c, idx) => c.wrap.classList.toggle('qhidden', idx !== current));
+    indicator.textContent = `Domanda ${current + 1} / ${total}`;
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+  }
+  prevBtn.addEventListener('click', () => show(current - 1));
+  nextBtn.addEventListener('click', () => show(current + 1));
+
+  // Pulsanti azione (correggi / ricomincia)
   const row = document.createElement('div');
   row.className = 'btn-row';
-  row.style.cssText = 'justify-content:center;margin-top:20px';
+  row.style.cssText = 'justify-content:center;margin-top:16px';
   if (mode === 'final') {
     row.innerHTML = `<button class="btn primary" type="button" data-act="submit">Correggi il quiz</button><button class="btn" type="button" data-act="reset">Ricomincia</button>`;
   } else {
@@ -1987,11 +2031,13 @@ function buildQuizPane(mountId, data, mode) {
       }
     });
     if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([mount]);
+    const submitBtn = row.querySelector('[data-act="submit"]');
+    if (submitBtn) { submitBtn.disabled = true; }
     const frac = score / total;
     let msg;
     if (frac === 1) msg = 'Padronanza completa: hai collegato bene teoria e calcolo su tutto il percorso. Ottimo lavoro.';
-    else if (frac >= 0.75) msg = 'Molto buono. Rivedi con calma le domande sbagliate: sei a un passo dalla piena padronanza.';
-    else if (frac >= 0.5) msg = 'Buona base. Le spiegazioni qui sopra chiariscono i punti mancati — è normale doverci tornare più volte.';
+    else if (frac >= 0.75) msg = 'Molto buono. Rivedi con calma le domande sbagliate (scorrile con «Indietro»): sei a un passo dalla piena padronanza.';
+    else if (frac >= 0.5) msg = 'Buona base. Le spiegazioni nelle singole domande chiariscono i punti mancati — è normale doverci tornare più volte.';
     else msg = 'Nessun problema: questi argomenti richiedono più passaggi. Rileggi la teoria e i quiz di sezione, poi ritenta il riepilogo.';
     summary.querySelector('.score').textContent = `${score} / ${total}`;
     summary.querySelector('p').textContent = msg;
@@ -1999,6 +2045,7 @@ function buildQuizPane(mountId, data, mode) {
     summary.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
+  show(0);
   if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([mount]);
 }
 
