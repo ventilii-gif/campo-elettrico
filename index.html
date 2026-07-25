@@ -1276,8 +1276,9 @@ function hexToRgb(hex) {
   const mP = document.getElementById('mP');
 
   let electrons = [];
-  let current = 0;      // A
-  let flowSpeed = 0;
+  let current = 0;      // A (corrente totale)
+  let isParallel = false;
+  let iTotal = 0, iB1 = 0, iB2 = 0;   // correnti: totale e nei due rami
 
   function computeState() {
     const E = parseFloat(emf.value);
@@ -1291,7 +1292,19 @@ function hexToRgb(hex) {
     const Vterm = E - r * i;              // tensione ai morsetti
     const P = i * i * Req;                // potenza sul carico
     current = i;
-    flowSpeed = Math.min(3.2, i * 8);     // scala visuale
+    iTotal = i;
+    if (topoParallel.checked) {
+      const Vpar = i * Req;               // tensione ai capi del parallelo
+      iB1 = Vpar / R1;                    // corrente nel ramo R1
+      iB2 = Vpar / R2;                    // corrente nel ramo R2
+    } else {
+      iB1 = iB2 = i;                      // in serie la stessa corrente ovunque
+    }
+    // Se la topologia è cambiata, ricostruisci geometria ed elettroni
+    if (topoParallel.checked !== builtParallel) {
+      isParallel = topoParallel.checked;
+      rebuildGeometry();
+    }
 
     emfVal.textContent = E.toFixed(1) + ' V';
     rintVal.textContent = r.toFixed(1) + ' Ω';
@@ -1304,46 +1317,66 @@ function hexToRgb(hex) {
     mP.textContent = (P >= 1 ? P.toFixed(2) + ' W' : (P * 1000).toFixed(0) + ' mW');
   }
 
-  // Percorso del filo (rettangolo) — lista di segmenti per animare gli elettroni
-  let path = [];
-  function buildPath() {
-    const m = 46;                       // margine
-    const x0 = m, y0 = m, x1 = W - m, y1 = H - m;
-    path = [
-      { x: x0, y: y1 }, { x: x0, y: y0 },   // sx sù
-      { x: x1, y: y0 },                     // top
-      { x: x1, y: y1 },                     // dx giù
-      { x: x0, y: y1 }                      // bottom (ritorno)
-    ];
-  }
+  // ----- Geometria del circuito (dipende dalla topologia) -----
+  let geo = null;            // nodi principali del disegno
+  let loops = [];            // percorsi chiusi seguiti dagli elettroni
+  let builtParallel = null;  // topologia con cui è stata costruita la geometria
 
-  function pathLength() {
+  function polyLen(pts) {
     let L = 0;
-    for (let i = 0; i < path.length - 1; i++)
-      L += Math.hypot(path[i+1].x - path[i].x, path[i+1].y - path[i].y);
+    for (let i = 0; i < pts.length - 1; i++) L += Math.hypot(pts[i+1].x - pts[i].x, pts[i+1].y - pts[i].y);
     return L;
   }
-
-  function posOnPath(t) { // t in [0,1)
-    const L = pathLength();
-    let d = t * L;
-    for (let i = 0; i < path.length - 1; i++) {
-      const seg = Math.hypot(path[i+1].x - path[i].x, path[i+1].y - path[i].y);
+  function posOnLoop(loop, t) {
+    let d = (((t % 1) + 1) % 1) * loop.len;
+    const pts = loop.pts;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const seg = Math.hypot(pts[i+1].x - pts[i].x, pts[i+1].y - pts[i].y);
       if (d <= seg) {
-        const f = d / seg;
-        return {
-          x: path[i].x + (path[i+1].x - path[i].x) * f,
-          y: path[i].y + (path[i+1].y - path[i].y) * f
-        };
+        const f = seg === 0 ? 0 : d / seg;
+        return { x: pts[i].x + (pts[i+1].x - pts[i].x) * f, y: pts[i].y + (pts[i+1].y - pts[i].y) * f };
       }
       d -= seg;
     }
-    return path[0];
+    return pts[pts.length - 1];
+  }
+
+  function buildGeometry() {
+    const m = 46;
+    const x0 = m, y0 = m, x1 = W - m, y1 = H - m;
+    const xA = x0 + (x1 - x0) * 0.34;   // nodo di sinistra (biforcazione)
+    const xB = x0 + (x1 - x0) * 0.66;   // nodo di destra (ricongiungimento)
+    const d = Math.min(30, (y1 - y0) * 0.18);
+    geo = { x0, y0, x1, y1, xA, xB, d };
+    // Tratto comune: dal nodo B, giro esterno (destra, basso, sinistra con la pila) fino al nodo A
+    const trunk = [
+      { x: xB, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 },
+      { x: x0, y: y1 }, { x: x0, y: y0 }, { x: xA, y: y0 }
+    ];
+    loops = [];
+    if (isParallel) {
+      // due rami A→B, uno sopra (R1) e uno sotto (R2)
+      const up = [{ x: xA, y: y0 - d }, { x: xB, y: y0 - d }, { x: xB, y: y0 }];
+      const lo = [{ x: xA, y: y0 + d }, { x: xB, y: y0 + d }, { x: xB, y: y0 }];
+      loops.push({ pts: trunk.concat(up), ref: 'b1' });
+      loops.push({ pts: trunk.concat(lo), ref: 'b2' });
+    } else {
+      // ramo unico dritto A→B (i due resistori in linea)
+      loops.push({ pts: trunk.concat([{ x: xB, y: y0 }]), ref: 'total' });
+    }
+    loops.forEach(L => { L.len = polyLen(L.pts); });
   }
 
   function initElectrons() {
     electrons = [];
-    for (let i = 0; i < 26; i++) electrons.push({ t: i / 26 });
+    const per = isParallel ? 13 : 24;
+    loops.forEach((L, li) => { for (let k = 0; k < per; k++) electrons.push({ loop: li, t: k / per }); });
+  }
+
+  function rebuildGeometry() {
+    buildGeometry();
+    initElectrons();
+    builtParallel = isParallel;
   }
 
   function resize() {
@@ -1355,7 +1388,8 @@ function hexToRgb(hex) {
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    buildPath();
+    isParallel = topoParallel.checked;
+    rebuildGeometry();
   }
 
   function drawBattery(x, y) {
@@ -1363,7 +1397,6 @@ function hexToRgb(hex) {
     ctx.save();
     ctx.strokeStyle = cssVar('--text');
     ctx.lineWidth = 2;
-    // linea lunga (+) e corta (−)
     ctx.beginPath(); ctx.moveTo(x - 12, y - 14); ctx.lineTo(x + 12, y - 14); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(x - 7, y - 2); ctx.lineTo(x + 7, y - 2); ctx.stroke();
     ctx.fillStyle = cssVar('--pos');
@@ -1392,48 +1425,74 @@ function hexToRgb(hex) {
     ctx.restore();
   }
 
+  function wire(pts) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.stroke();
+  }
+  function node(x, y) {
+    ctx.beginPath();
+    ctx.arc(x, y, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = cssVar('--wire');
+    ctx.fill();
+  }
+
   function draw() {
     ctx.clearRect(0, 0, W, H);
-    // filo
+    if (!geo) return;
+    const { x0, y0, x1, y1, xA, xB, d } = geo;
+
     ctx.strokeStyle = cssVar('--wire');
     ctx.lineWidth = 4;
     ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(path[0].x, path[0].y);
-    for (let i = 1; i < path.length; i++) ctx.lineTo(path[i].x, path[i].y);
-    ctx.stroke();
+    ctx.lineCap = 'round';
 
-    // generatore (lato sinistro, a metà altezza)
-    const mLeftY = (path[0].y + path[1].y) / 2;
-    drawBattery(path[0].x, mLeftY);
+    // tratto esterno comune (con la pila sul lato sinistro)
+    wire([{ x: xB, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }, { x: x0, y: y0 }, { x: xA, y: y0 }]);
 
-    // resistori sul lato superiore
-    const topY = path[1].y;
-    const topX0 = path[1].x, topX1 = path[2].x;
-    if (topoSeries.checked) {
-      drawResistor(topX0 + (topX1 - topX0) * 0.33, topY, 'R₁', cssVar('--accent'));
-      drawResistor(topX0 + (topX1 - topX0) * 0.66, topY, 'R₂', cssVar('--pos'));
-    } else {
-      // parallelo: due rami sul lato destro schematizzati come etichette affiancate
-      drawResistor(topX0 + (topX1 - topX0) * 0.5 - 34, topY, 'R₁', cssVar('--accent'));
-      drawResistor(topX0 + (topX1 - topX0) * 0.5 + 34, topY, 'R₂', cssVar('--pos'));
-      // piccola indicazione "∥"
+    if (isParallel) {
+      // sbarre verticali ai nodi e i due rami orizzontali
+      wire([{ x: xA, y: y0 - d }, { x: xA, y: y0 + d }]);
+      wire([{ x: xB, y: y0 - d }, { x: xB, y: y0 + d }]);
+      wire([{ x: xA, y: y0 - d }, { x: xB, y: y0 - d }]);
+      wire([{ x: xA, y: y0 + d }, { x: xB, y: y0 + d }]);
+      node(xA, y0); node(xB, y0);
+      drawResistor((xA + xB) / 2, y0 - d, 'R₁', cssVar('--accent'));
+      drawResistor((xA + xB) / 2, y0 + d, 'R₂', cssVar('--pos'));
       ctx.fillStyle = cssVar('--muted');
-      ctx.font = '13px sans-serif';
+      ctx.font = '12px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('∥', topX0 + (topX1 - topX0) * 0.5, topY - 20);
+      ctx.fillText('R₁ ∥ R₂  (in parallelo)', (xA + xB) / 2, y0 + d + 24);
+      // correnti di ramo
+      ctx.fillStyle = cssVar('--i-color');
+      ctx.font = '11px sans-serif';
+      ctx.fillText((iB1 * 1000).toFixed(0) + ' mA', (xA + xB) / 2, y0 - d - 18);
+      ctx.fillText((iB2 * 1000).toFixed(0) + ' mA', (xA + xB) / 2 + 66, y0 + d - 16);
+    } else {
+      wire([{ x: xA, y: y0 }, { x: xB, y: y0 }]);
+      drawResistor(xA + (xB - xA) * 0.30, y0, 'R₁', cssVar('--accent'));
+      drawResistor(xA + (xB - xA) * 0.70, y0, 'R₂', cssVar('--pos'));
+      ctx.fillStyle = cssVar('--muted');
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('R₁ — R₂  (in serie)', (xA + xB) / 2, y0 - 22);
     }
 
-    // etichetta corrente
+    drawBattery(x0, (y0 + y1) / 2);
+
+    // etichetta corrente totale (lato destro)
     ctx.fillStyle = cssVar('--i-color');
     ctx.font = 'bold 13px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('i = ' + (current * 1000).toFixed(0) + ' mA', path[3].x - 118, (path[2].y + path[3].y)/2);
+    ctx.textAlign = 'right';
+    ctx.fillText('i = ' + (current * 1000).toFixed(0) + ' mA', x1 - 12, (y0 + y1) / 2 - 8);
 
     // elettroni
     ctx.fillStyle = cssVar('--electron');
     for (const el of electrons) {
-      const p = posOnPath(el.t);
+      const L = loops[el.loop];
+      if (!L) continue;
+      const p = posOnLoop(L, el.t);
       ctx.beginPath();
       ctx.arc(p.x, p.y, 3.4, 0, Math.PI * 2);
       ctx.fill();
@@ -1444,11 +1503,15 @@ function hexToRgb(hex) {
   function loop(now) {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    // gli elettroni si muovono in verso opposto alla corrente convenzionale
+    // gli elettroni si muovono in verso opposto alla corrente convenzionale;
+    // la velocità è proporzionale alla corrente del ramo che percorrono
     for (const el of electrons) {
-      el.t -= flowSpeed * dt * 0.12;
-      if (el.t < 0) el.t += 1;
-      if (el.t >= 1) el.t -= 1;
+      const L = loops[el.loop];
+      if (!L) continue;
+      const iref = L.ref === 'b1' ? iB1 : (L.ref === 'b2' ? iB2 : iTotal);
+      const pxPerSec = Math.min(300, iref * 680);
+      const rate = L.len > 0 ? pxPerSec / L.len : 0;
+      el.t = (((el.t - rate * dt) % 1) + 1) % 1;
     }
     draw();
     requestAnimationFrame(loop);
