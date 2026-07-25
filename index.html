@@ -504,6 +504,39 @@ input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color:
 }
 .progress-bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--pos)); width: 0; transition: width .5s ease; }
 
+/* Sotto-navigazione dei quiz */
+.quiz-subnav { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 20px; }
+.subtab {
+  border: 1px solid var(--border-2); background: var(--surface-2); color: var(--muted);
+  padding: 9px 15px; border-radius: 10px; cursor: pointer;
+  font-weight: 600; font-size: .9rem; font-family: inherit;
+}
+.subtab:hover { color: var(--text); border-color: var(--accent); }
+.subtab.active {
+  background: var(--accent-soft); color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.quiz-pane { display: none; animation: fade .4s ease; }
+.quiz-pane.active { display: block; }
+.quiz-pane .pane-intro { color: var(--muted); font-size: .98rem; margin: 0 0 14px; }
+.run-score {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 11px 16px; margin: 0 0 16px; box-shadow: var(--shadow); font-weight: 600;
+}
+.run-score .rs-main { font-size: 1.02rem; }
+.run-score .rs-num { color: var(--accent); font-variant-numeric: tabular-nums; }
+.run-score .rs-sub { font-size: .85rem; color: var(--muted); font-weight: 500; }
+.quiz-block-title {
+  font-size: 1.06rem; margin: 24px 0 8px; color: var(--accent-2);
+  display: flex; align-items: center; gap: 8px;
+}
+.quiz-block-title::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: 0 0 auto;
+}
+.opt.sel { border-color: var(--accent); background: var(--accent-soft); }
+
 /* Diagrammi SVG */
 .diagram { width: 100%; height: auto; display: block; margin: 10px auto; max-width: 520px; }
 .svg-cap { text-align: center; font-size: .84rem; color: var(--muted); margin-top: 4px; }
@@ -873,21 +906,18 @@ table.data th { background: var(--surface-2); }
      SEZIONE 4 — QUIZ
      ============================================================ -->
 <section id="quiz" class="section">
-  <h1>Quiz finale</h1>
-  <p class="lead">Domande a risposta multipla e problemi numerici sull'intero percorso. Ogni risposta riceve una spiegazione, anche quando è corretta: capire <em>perché</em> conta più del punteggio.</p>
+  <h1>Quiz</h1>
+  <p class="lead">Due quiz per argomento con <strong>correzione immediata</strong> domanda per domanda, e un <strong>quiz finale di riepilogo</strong> che mostra punteggio e spiegazioni solo alla fine. In tutti i quiz la posizione della risposta esatta è casuale, quindi ricomincia pure più volte: le opzioni si rimescolano.</p>
 
-  <div class="progress-bar"><span id="quizProgress"></span></div>
-  <div id="quizContainer"></div>
-
-  <div class="btn-row" style="justify-content:center;margin-top:18px">
-    <button class="btn primary" id="quizSubmit">Correggi il quiz</button>
-    <button class="btn" id="quizReset">Ricomincia</button>
+  <div class="quiz-subnav">
+    <button class="subtab active" data-pane="pane-campo">Sezione 1 · Campo elettrico</button>
+    <button class="subtab" data-pane="pane-corrente">Sezione 2 · Corrente continua</button>
+    <button class="subtab" data-pane="pane-finale">Quiz finale · Riepilogo</button>
   </div>
 
-  <div class="quiz-summary" id="quizSummary">
-    <div class="score" id="quizScore">0 / 0</div>
-    <p id="quizMsg"></p>
-  </div>
+  <div class="quiz-pane active" id="pane-campo"></div>
+  <div class="quiz-pane" id="pane-corrente"></div>
+  <div class="quiz-pane" id="pane-finale"></div>
 </section>
 
 <div class="footer-note">
@@ -909,6 +939,12 @@ navBtns.forEach(btn => {
     navBtns.forEach(b => b.classList.toggle('active', b === btn));
     sections.forEach(s => s.classList.toggle('active', s.id === target));
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Le simulazioni vanno (ri)dimensionate quando diventano visibili:
+    // un canvas nascosto ha larghezza 0 e non disegnerebbe nulla.
+    if (target === 'simulazioni') {
+      if (window.__fieldEnsure) window.__fieldEnsure();
+      if (window.__circuitResize) window.__circuitResize();
+    }
   });
 });
 
@@ -969,6 +1005,11 @@ function cssVar(name) {
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // Mantiene le cariche dentro il canvas dopo un ridimensionamento.
+    charges.forEach(c => {
+      c.x = Math.min(Math.max(c.x, CHARGE_R), Math.max(CHARGE_R, W - CHARGE_R));
+      c.y = Math.min(Math.max(c.y, CHARGE_R), Math.max(CHARGE_R, H - CHARGE_R));
+    });
     draw();
   }
 
@@ -1166,13 +1207,19 @@ function cssVar(name) {
   };
   [showLines, showVectors, showPotential].forEach(cb => cb.addEventListener('change', draw));
 
-  window.addEventListener('resize', resize);
-  // init
-  setTimeout(() => {
+  let started = false;
+  function ensure() {
     resize();
-    charges = [{ x: W * 0.38, y: H * 0.5, q: 1 }, { x: W * 0.62, y: H * 0.5, q: -1 }];
+    if (!started && W > 0) {
+      started = true;
+      charges = [{ x: W * 0.38, y: H * 0.5, q: 1 }, { x: W * 0.62, y: H * 0.5, q: -1 }];
+    }
     draw();
-  }, 60);
+  }
+  window.__fieldEnsure = ensure;
+  window.addEventListener('resize', () => { resize(); });
+  // init (nel caso la sezione fosse già visibile all'avvio)
+  setTimeout(ensure, 60);
 })();
 
 /* Utility: hex -> rgb */
@@ -1389,6 +1436,7 @@ function hexToRgb(hex) {
 
   [emf, rint, r1, r2].forEach(s => s.addEventListener('input', computeState));
   [topoSeries, topoParallel].forEach(r => r.addEventListener('change', computeState));
+  window.__circuitResize = () => { resize(); };
   window.addEventListener('resize', () => { resize(); draw(); });
 
   setTimeout(() => {
@@ -1576,157 +1624,397 @@ function buildExercises() {
 buildExercises();
 
 /* ============================================================
-   QUIZ FINALE
+   QUIZ — due quiz di sezione (correzione immediata) + quiz finale
+   (punteggio e spiegazioni solo alla fine). La posizione della
+   risposta esatta è sempre casuale (le opzioni vengono rimescolate).
    ============================================================ */
-const quiz = [
-  {
-    type: 'mc',
-    q: 'Raddoppiando la distanza tra due cariche puntiformi, la forza di Coulomb tra loro:',
-    options: ['Raddoppia', 'Si dimezza', 'Diventa un quarto', 'Non cambia'],
-    correct: 2,
-    explain: 'La forza va come \\(1/r^2\\): se \\(r\\) raddoppia, \\(r^2\\) quadruplica, quindi la forza diventa un quarto.'
-  },
-  {
-    type: 'mc',
-    q: 'Le linee del campo elettrico:',
-    options: ['Si incrociano nei punti di campo intenso', 'Escono dalle cariche negative', 'Sono tangenti al vettore E in ogni punto', 'Sono sempre rette parallele'],
-    correct: 2,
-    explain: 'Per definizione la linea di campo è tangente in ogni suo punto al vettore \\(\\vec E\\). Le linee non si incrociano mai ed escono dalle cariche positive.'
-  },
-  {
-    type: 'mc',
-    q: 'Il teorema di Gauss afferma che il flusso di E attraverso una superficie chiusa dipende:',
-    options: ['Dalla forma della superficie', 'Solo dalla carica racchiusa', 'Dalla distanza dalle cariche esterne', 'Dal materiale della superficie'],
-    correct: 1,
-    explain: '\\(\\Phi(\\vec E) = Q_{int}/\\varepsilon_0\\): conta solo la carica interna, non la forma della superficie né le cariche esterne.'
-  },
-  {
-    type: 'mc',
-    q: 'In un collegamento in serie di resistori:',
-    options: ['La tensione è la stessa su ciascuno', 'La corrente è la stessa in ciascuno', 'La resistenza equivalente è minore della più piccola', 'Le correnti si sommano'],
-    correct: 1,
-    explain: 'In serie passa la stessa corrente in tutti i resistori e le resistenze si sommano. È in parallelo che la tensione è comune e le correnti si sommano.'
-  },
-  {
-    type: 'mc',
-    q: 'Perché la tensione ai morsetti di una batteria reale cala quando eroga molta corrente?',
-    options: ['Perché la f.e.m. diminuisce', 'Per la caduta di tensione r·i sulla resistenza interna', 'Perché il carico si scalda', 'Per effetto Joule nel voltmetro'],
-    correct: 1,
-    explain: '\\(V_{morsetti} = \\varepsilon - r\\,i\\): più corrente eroga, maggiore è la caduta \\(r\\,i\\) interna e minore la tensione disponibile.'
-  },
-  {
-    type: 'num',
-    q: 'Un resistore da \\(R = 220\\ \\Omega\\) ha ai capi una tensione \\(V = 11\\ \\mathrm{V}\\). Quanto vale la corrente, in milliampere (mA)?',
-    answer: 50, tol: 2, unit: 'mA',
-    explain: '\\(i = V/R = 11/220 = 0{,}05\\ \\mathrm{A} = 50\\ \\mathrm{mA}\\).'
-  },
-  {
-    type: 'num',
-    q: 'Due resistori da \\(R_1 = 100\\ \\Omega\\) e \\(R_2 = 100\\ \\Omega\\) in serie. Quanto vale la resistenza equivalente (in ohm)?',
-    answer: 200, tol: 1, unit: 'Ω',
-    explain: 'In serie le resistenze si sommano: \\(R_{eq} = 100 + 100 = 200\\ \\Omega\\).'
-  },
-  {
-    type: 'num',
-    q: 'Una lampadina dissipa \\(P = 60\\ \\mathrm{W}\\) alla tensione di rete \\(V = 230\\ \\mathrm{V}\\). Quanta corrente assorbe, in ampere? (una cifra decimale)',
-    answer: 0.26, tol: 0.03, unit: 'A',
-    explain: 'Da \\(P = V\\,i\\) si ha \\(i = P/V = 60/230 \\approx 0{,}26\\ \\mathrm{A}\\).'
+
+/* ---- Dati: Sezione 1 — Campo elettrico ---- */
+const QUIZ_CAMPO = {
+  theory: [
+    { q: 'La forza di Coulomb tra due cariche puntiformi è proporzionale a:',
+      options: ['\\(1/r^2\\)', '\\(1/r\\)', '\\(r\\)', '\\(r^2\\)'], correct: 0,
+      explain: 'La legge di Coulomb è \\(F = k\\,|q_1 q_2|/r^2\\): la forza diminuisce con il quadrato della distanza.' },
+    { q: 'Due cariche dello stesso segno poste vicine:',
+      options: ['Si respingono', 'Si attraggono', 'Non interagiscono', 'Si annullano'], correct: 0,
+      explain: 'Cariche di segno concorde si respingono; solo cariche di segno opposto si attraggono.' },
+    { q: 'Nel SI il campo elettrico si misura in:',
+      options: ['N/C (equivalente a V/m)', 'J/C', 'C/N', 'N·C'], correct: 0,
+      explain: '\\(E = F/q\\), quindi N/C; è equivalente a V/m. Invece J/C = V è il potenziale.' },
+    { q: 'Il campo elettrico generato da una carica puntiforme positiva è diretto:',
+      options: ['Radialmente verso l\'esterno', 'Radialmente verso la carica', 'In cerchi attorno alla carica', 'Parallelamente a un asse fisso'], correct: 0,
+      explain: 'Le linee escono dalle cariche positive: \\(\\vec E\\) punta lontano dalla carica.' },
+    { q: 'Il campo prodotto da più cariche in un punto si ottiene:',
+      options: ['Come somma vettoriale dei singoli campi', 'Come somma dei moduli dei campi', 'Considerando solo la carica più vicina', 'Facendo la media dei campi'], correct: 0,
+      explain: 'Vale il principio di sovrapposizione: \\(\\vec E_{tot}=\\vec E_1+\\vec E_2+\\dots\\), somma vettoriale.' },
+    { q: 'Riguardo alle linee di campo elettrico, quale affermazione è corretta?',
+      options: ['Sono tangenti al vettore E in ogni punto e non si incrociano', 'Si incrociano dove il campo è intenso', 'Escono dalle cariche negative', 'Sono sempre rette parallele'], correct: 0,
+      explain: 'La linea di campo è tangente a \\(\\vec E\\) punto per punto; due linee non si incrociano mai perché il campo ha una sola direzione.' },
+    { q: 'Il teorema di Gauss afferma che il flusso di E attraverso una superficie chiusa dipende:',
+      options: ['Solo dalla carica racchiusa', 'Dalla forma della superficie', 'Dalle cariche esterne vicine', 'Dal materiale della superficie'], correct: 0,
+      explain: '\\(\\Phi(\\vec E)=Q_{int}/\\varepsilon_0\\): conta solo la carica interna alla superficie.' },
+    { q: 'All\'interno di un conduttore in equilibrio elettrostatico il campo elettrico è:',
+      options: ['Nullo', 'Massimo', 'Uniforme e diverso da zero', 'Diretto verso il centro'], correct: 0,
+      explain: 'In equilibrio le cariche si dispongono sulla superficie e il campo interno è nullo.' },
+    { q: 'Il campo elettrico di un piano infinito uniformemente carico:',
+      options: ['È uniforme e non dipende dalla distanza', 'Diminuisce come \\(1/r\\)', 'Diminuisce come \\(1/r^2\\)', 'Aumenta con la distanza'], correct: 0,
+      explain: 'Per un piano infinito \\(E=\\sigma/2\\varepsilon_0\\): costante, indipendente dalla distanza dal piano.' },
+    { q: 'Il potenziale elettrico di una carica puntiforme varia con la distanza come:',
+      options: ['\\(1/r\\)', '\\(1/r^2\\)', '\\(r\\)', 'Costante'], correct: 0,
+      explain: '\\(V=kQ/r\\): il potenziale va come \\(1/r\\), mentre il campo va come \\(1/r^2\\).' }
+  ],
+  problems: [
+    { q: 'Due cariche \\(q_1=2{,}0\\ \\mu\\mathrm{C}\\) e \\(q_2=4{,}0\\ \\mu\\mathrm{C}\\) distano \\(r=0{,}30\\ \\mathrm{m}\\) nel vuoto. Calcola l\'intensità della forza (in N).',
+      answer: 0.80, tol: 0.05, unit: 'N',
+      explain: '\\(F=8{,}99\\times10^9\\dfrac{(2\\times10^{-6})(4\\times10^{-6})}{0{,}30^2}\\approx 0{,}80\\ \\mathrm{N}\\).' },
+    { q: 'Campo elettrico di una carica \\(Q=3{,}0\\ \\mu\\mathrm{C}\\) a \\(r=0{,}30\\ \\mathrm{m}\\) (in N/C).',
+      answer: 300000, tol: 12000, unit: 'N/C',
+      explain: '\\(E=8{,}99\\times10^9\\dfrac{3{,}0\\times10^{-6}}{0{,}30^2}\\approx 3{,}0\\times10^{5}\\ \\mathrm{N/C}\\).' },
+    { q: 'Tra due lastre piane distanti \\(d=0{,}030\\ \\mathrm{m}\\) c\'è una differenza di potenziale \\(\\Delta V=120\\ \\mathrm{V}\\). Quanto vale il campo uniforme (in V/m)?',
+      answer: 4000, tol: 100, unit: 'V/m',
+      explain: '\\(E=\\Delta V/d = 120/0{,}030 = 4000\\ \\mathrm{V/m}\\).' },
+    { q: 'Potenziale di una carica \\(Q=8{,}0\\ \\mathrm{nC}\\) a distanza \\(r=0{,}20\\ \\mathrm{m}\\) (in V).',
+      answer: 360, tol: 15, unit: 'V',
+      explain: '\\(V=kQ/r=8{,}99\\times10^9\\dfrac{8{,}0\\times10^{-9}}{0{,}20}\\approx 360\\ \\mathrm{V}\\).' },
+    { q: 'Una carica \\(q=5{,}0\\ \\mu\\mathrm{C}\\) è immersa in un campo uniforme \\(E=3{,}0\\times10^4\\ \\mathrm{N/C}\\). Calcola la forza su di essa (in N).',
+      answer: 0.15, tol: 0.01, unit: 'N',
+      explain: '\\(F=qE=(5{,}0\\times10^{-6})(3{,}0\\times10^{4})=0{,}15\\ \\mathrm{N}\\).' }
+  ]
+};
+
+/* ---- Dati: Sezione 2 — Corrente continua ---- */
+const QUIZ_CORRENTE = {
+  theory: [
+    { q: 'L\'intensità di corrente elettrica è:',
+      options: ['La carica che attraversa una sezione nell\'unità di tempo', 'La carica totale del conduttore', 'La velocità degli elettroni', 'La tensione per unità di lunghezza'], correct: 0,
+      explain: '\\(i=\\Delta q/\\Delta t\\), misurata in ampere (C/s).' },
+    { q: 'Il verso convenzionale della corrente è:',
+      options: ['Opposto al moto degli elettroni', 'Uguale al moto degli elettroni', 'Sempre da destra a sinistra', 'Indefinito'], correct: 0,
+      explain: 'Per convenzione la corrente ha il verso delle cariche positive, cioè opposto al moto reale degli elettroni.' },
+    { q: 'La prima legge di Ohm afferma che:',
+      options: ['\\(V=R\\,i\\), con R costante', '\\(V=R/i\\)', '\\(i=R\\,V\\)', '\\(R=V\\,i\\)'], correct: 0,
+      explain: 'Nei conduttori ohmici la tensione è proporzionale alla corrente: \\(V=R\\,i\\).' },
+    { q: 'A parità di materiale, la resistenza di un filo:',
+      options: ['Aumenta con la lunghezza e diminuisce con la sezione', 'Aumenta con la sezione', 'Non dipende dalla geometria', 'Diminuisce con la lunghezza'], correct: 0,
+      explain: 'Seconda legge di Ohm: \\(R=\\rho\\,\\ell/A\\). Lungo e sottile ⇒ R grande.' },
+    { q: 'Nei metalli, all\'aumentare della temperatura la resistività:',
+      options: ['Aumenta', 'Diminuisce', 'Resta costante', 'Si annulla'], correct: 0,
+      explain: 'Gli ioni vibrano di più e ostacolano gli elettroni: \\(\\rho(T)=\\rho_0[1+\\alpha(T-T_0)]\\), con \\(\\alpha>0\\).' },
+    { q: 'La potenza dissipata per effetto Joule in un resistore può scriversi come:',
+      options: ['\\(R\\,i^2\\)', '\\(R/i^2\\)', '\\(i/R^2\\)', '\\(R^2 i\\)'], correct: 0,
+      explain: '\\(P=V\\,i=R\\,i^2=V^2/R\\): tutte equivalenti tramite \\(V=Ri\\).' },
+    { q: 'In un collegamento in serie di resistori:',
+      options: ['La corrente è la stessa in ciascuno e le resistenze si sommano', 'La tensione è la stessa su ciascuno', 'La resistenza equivalente è minore della più piccola', 'Le correnti si sommano'], correct: 0,
+      explain: 'In serie passa la stessa corrente e \\(R_{eq}=R_1+R_2+\\dots\\).' },
+    { q: 'Collegando resistori in parallelo, la resistenza equivalente:',
+      options: ['È minore della più piccola delle resistenze', 'È la somma delle resistenze', 'È la media delle resistenze', 'È maggiore della più grande'], correct: 0,
+      explain: '\\(1/R_{eq}=\\sum 1/R_i\\): più strade parallele ⇒ meno resistenza complessiva.' },
+    { q: 'La legge dei nodi di Kirchhoff esprime:',
+      options: ['La conservazione della carica (correnti entranti = uscenti)', 'La conservazione dell\'energia', 'La legge di Ohm generalizzata', 'La costanza della tensione'], correct: 0,
+      explain: 'In un nodo nulla si accumula: \\(\\sum i_{entranti}=\\sum i_{uscenti}\\).' },
+    { q: 'In un generatore reale, aumentando la corrente erogata, la tensione ai morsetti:',
+      options: ['Diminuisce, per la caduta \\(r\\,i\\)', 'Aumenta', 'Resta uguale alla f.e.m.', 'Si annulla sempre'], correct: 0,
+      explain: '\\(V_{morsetti}=\\varepsilon-r\\,i\\): più corrente ⇒ maggiore caduta interna ⇒ minore tensione disponibile.' }
+  ],
+  problems: [
+    { q: 'Un resistore ha ai capi \\(V=12\\ \\mathrm{V}\\) ed è attraversato da... calcola la corrente sapendo \\(R=48\\ \\Omega\\) (in A).',
+      answer: 0.25, tol: 0.01, unit: 'A',
+      explain: '\\(i=V/R=12/48=0{,}25\\ \\mathrm{A}\\).' },
+    { q: 'Due resistori \\(R_1=150\\ \\Omega\\) e \\(R_2=250\\ \\Omega\\) in serie. Resistenza equivalente (in Ω)?',
+      answer: 400, tol: 1, unit: 'Ω',
+      explain: 'In serie: \\(R_{eq}=150+250=400\\ \\Omega\\).' },
+    { q: 'Due resistori \\(R_1=12\\ \\Omega\\) e \\(R_2=4{,}0\\ \\Omega\\) in parallelo. Resistenza equivalente (in Ω)?',
+      answer: 3, tol: 0.1, unit: 'Ω',
+      explain: '\\(R_{eq}=\\dfrac{12\\cdot 4}{12+4}=\\dfrac{48}{16}=3{,}0\\ \\Omega\\).' },
+    { q: 'Un resistore \\(R=50\\ \\Omega\\) è percorso da \\(i=0{,}40\\ \\mathrm{A}\\). Potenza dissipata (in W)?',
+      answer: 8, tol: 0.3, unit: 'W',
+      explain: '\\(P=R\\,i^2=50\\cdot 0{,}40^2=8{,}0\\ \\mathrm{W}\\).' },
+    { q: 'Batteria con \\(\\varepsilon=6{,}0\\ \\mathrm{V}\\), \\(r=0{,}50\\ \\Omega\\), carico \\(R=2{,}5\\ \\Omega\\). Corrente nel circuito (in A)?',
+      answer: 2, tol: 0.05, unit: 'A',
+      explain: '\\(i=\\dfrac{\\varepsilon}{R+r}=\\dfrac{6{,}0}{3{,}0}=2{,}0\\ \\mathrm{A}\\).' }
+  ]
+};
+
+/* ---- Dati: Quiz finale — Riepilogo (campo + corrente) ---- */
+const QUIZ_FINALE = {
+  theory: [
+    { q: 'Raddoppiando la distanza tra due cariche puntiformi, la forza di Coulomb:',
+      options: ['Diventa un quarto', 'Raddoppia', 'Si dimezza', 'Non cambia'], correct: 0,
+      explain: 'La forza va come \\(1/r^2\\): se \\(r\\) raddoppia, \\(r^2\\) quadruplica e la forza diventa un quarto.' },
+    { q: 'L\'unità V/m per il campo elettrico è equivalente a:',
+      options: ['N/C', 'J/C', 'C/s', 'W/A'], correct: 0,
+      explain: 'V/m = N/C: sono la stessa unità del campo elettrico.' },
+    { q: 'Le linee del campo elettrico:',
+      options: ['Escono dalle cariche positive ed entrano nelle negative', 'Escono dalle negative', 'Formano cerchi chiusi attorno alle cariche', 'Si incrociano nei punti intensi'], correct: 0,
+      explain: 'Per convenzione le linee escono dal + e entrano nel −, senza mai incrociarsi.' },
+    { q: 'Secondo il teorema di Gauss, il flusso di E attraverso una superficie chiusa vale:',
+      options: ['\\(Q_{int}/\\varepsilon_0\\)', '\\(\\varepsilon_0 Q_{int}\\)', '\\(Q_{int}\\,r^2\\)', 'Zero sempre'], correct: 0,
+      explain: '\\(\\Phi(\\vec E)=Q_{int}/\\varepsilon_0\\): dipende solo dalla carica racchiusa.' },
+    { q: 'Il potenziale di una carica puntiforme, rispetto al campo, varia:',
+      options: ['Come \\(1/r\\) (il campo come \\(1/r^2\\))', 'Come \\(1/r^2\\) (il campo come \\(1/r\\))', 'Come \\(r\\)', 'Allo stesso modo del campo'], correct: 0,
+      explain: '\\(V=kQ/r\\) va come \\(1/r\\); il campo \\(E=kQ/r^2\\) va come \\(1/r^2\\).' },
+    { q: 'In un collegamento in serie di resistori è costante:',
+      options: ['La corrente', 'La tensione su ciascuno', 'La potenza su ciascuno', 'La resistenza di ciascuno rispetto al totale'], correct: 0,
+      explain: 'In serie la stessa corrente attraversa tutti i componenti.' },
+    { q: 'La resistenza equivalente di due resistori in parallelo è:',
+      options: ['Minore della più piccola delle due', 'La somma delle due', 'La media aritmetica', 'Maggiore della più grande'], correct: 0,
+      explain: 'In parallelo \\(R_{eq}=\\dfrac{R_1R_2}{R_1+R_2}\\), sempre minore della più piccola.' },
+    { q: 'L\'effetto Joule consiste nella trasformazione di energia elettrica in:',
+      options: ['Calore', 'Energia luminosa pura', 'Energia chimica', 'Energia potenziale gravitazionale'], correct: 0,
+      explain: 'In un resistore la potenza \\(P=Ri^2\\) si dissipa interamente come calore.' },
+    { q: 'Nei metalli, scaldando il conduttore la sua resistenza:',
+      options: ['Aumenta', 'Diminuisce', 'Resta identica', 'Diventa negativa'], correct: 0,
+      explain: 'La resistività cresce con la temperatura, quindi \\(R=\\rho\\ell/A\\) aumenta.' },
+    { q: 'La tensione ai morsetti di un generatore reale vale:',
+      options: ['\\(\\varepsilon - r\\,i\\)', '\\(\\varepsilon + r\\,i\\)', '\\(\\varepsilon\\,r\\,i\\)', '\\(\\varepsilon/(r\\,i)\\)'], correct: 0,
+      explain: 'La resistenza interna provoca una caduta \\(r\\,i\\): \\(V_{morsetti}=\\varepsilon-r\\,i\\).' }
+  ],
+  problems: [
+    { q: 'Due cariche \\(q_1=q_2=1{,}0\\ \\mu\\mathrm{C}\\) distano \\(r=0{,}10\\ \\mathrm{m}\\). Forza di Coulomb (in N)?',
+      answer: 0.90, tol: 0.05, unit: 'N',
+      explain: '\\(F=8{,}99\\times10^9\\dfrac{(10^{-6})^2}{0{,}10^2}\\approx 0{,}90\\ \\mathrm{N}\\).' },
+    { q: 'Campo di una carica \\(Q=5{,}0\\ \\mu\\mathrm{C}\\) a \\(r=0{,}50\\ \\mathrm{m}\\) (in N/C).',
+      answer: 180000, tol: 8000, unit: 'N/C',
+      explain: '\\(E=8{,}99\\times10^9\\dfrac{5{,}0\\times10^{-6}}{0{,}50^2}\\approx 1{,}8\\times10^{5}\\ \\mathrm{N/C}\\).' },
+    { q: 'Un resistore \\(R=180\\ \\Omega\\) ha ai capi \\(V=9{,}0\\ \\mathrm{V}\\). Corrente in milliampere (mA)?',
+      answer: 50, tol: 2, unit: 'mA',
+      explain: '\\(i=V/R=9{,}0/180=0{,}05\\ \\mathrm{A}=50\\ \\mathrm{mA}\\).' },
+    { q: 'Due resistori \\(R_1=6{,}0\\ \\Omega\\) e \\(R_2=3{,}0\\ \\Omega\\) in parallelo. Resistenza equivalente (in Ω)?',
+      answer: 2, tol: 0.1, unit: 'Ω',
+      explain: '\\(R_{eq}=\\dfrac{6\\cdot 3}{6+3}=\\dfrac{18}{9}=2{,}0\\ \\Omega\\).' },
+    { q: 'Un resistore \\(R=12\\ \\Omega\\) ha ai capi \\(V=24\\ \\mathrm{V}\\). Potenza dissipata (in W)?',
+      answer: 48, tol: 2, unit: 'W',
+      explain: '\\(P=V^2/R=24^2/12=576/12=48\\ \\mathrm{W}\\).' }
+  ]
+};
+
+/* ---- Utility: mescola le opzioni mantenendo l'indice corretto ---- */
+function shuffleMC(item) {
+  const arr = item.options.map((text, i) => ({ text, ok: i === item.correct }));
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
-];
-
-function buildQuiz() {
-  const cont = document.getElementById('quizContainer');
-  cont.innerHTML = '';
-  quiz.forEach((item, i) => {
-    const div = document.createElement('div');
-    div.className = 'quiz-q';
-    let body = `<div class="q-num">Domanda ${i + 1} di ${quiz.length}</div><p style="margin:.3em 0 .6em"><strong>${item.q}</strong></p>`;
-    if (item.type === 'mc') {
-      item.options.forEach((opt, j) => {
-        body += `<label class="opt" data-q="${i}" data-opt="${j}">
-          <input type="radio" name="q${i}" value="${j}"> ${opt}
-        </label>`;
-      });
-    } else {
-      body += `<div class="answer-row">
-        <input type="number" step="any" placeholder="Risposta (${item.unit})" id="qnum-${i}">
-      </div>`;
-    }
-    body += `<div class="q-explain" id="exp-${i}"></div>`;
-    div.innerHTML = body;
-    cont.appendChild(div);
-  });
-  if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([cont]);
-  updateProgress();
+  return { options: arr.map(o => o.text), correctIndex: arr.findIndex(o => o.ok) };
 }
 
-function updateProgress() {
-  let answered = 0;
-  quiz.forEach((item, i) => {
-    if (item.type === 'mc') {
-      if (document.querySelector(`input[name="q${i}"]:checked`)) answered++;
+function parseNum(v) { return parseFloat(String(v).replace(',', '.')); }
+
+/* ---- Costruisce un quiz (immediato o finale) in un contenitore ---- */
+function buildQuizPane(mountId, data, mode) {
+  const mount = document.getElementById(mountId);
+  const nTheory = data.theory.length, nProblems = data.problems.length;
+  const total = nTheory + nProblems;
+
+  const ctx = { total, answered: 0, correct: 0, submitted: false, cards: [] };
+
+  mount.innerHTML = '';
+
+  const intro = document.createElement('p');
+  intro.className = 'pane-intro';
+  intro.innerHTML = mode === 'immediate'
+    ? `Quiz a correzione immediata: ogni domanda viene valutata subito, con la spiegazione. ${nTheory} domande di teoria e ${nProblems} problemi numerici.`
+    : `Rispondi a tutte le domande, poi premi «Correggi il quiz»: il punteggio e le spiegazioni compaiono solo alla fine. ${nTheory} domande di teoria e ${nProblems} problemi numerici.`;
+  mount.appendChild(intro);
+
+  // Barra di stato (immediato: punteggio live; finale: avanzamento)
+  const bar = document.createElement('div');
+  bar.className = 'run-score';
+  if (mode === 'immediate') {
+    bar.innerHTML = `<span class="rs-main">Corrette: <span class="rs-num">0</span> / ${total}</span><span class="rs-sub">Completate: <span class="rs-done">0</span>/${total}</span>`;
+  } else {
+    bar.innerHTML = `<span class="rs-main">Risposte date: <span class="rs-num">0</span> / ${total}</span><span class="rs-sub">Il punteggio appare dopo la correzione</span>`;
+  }
+  mount.appendChild(bar);
+  const rsNum = bar.querySelector('.rs-num');
+  const rsDone = bar.querySelector('.rs-done');
+
+  function refreshBar() {
+    if (mode === 'immediate') {
+      rsNum.textContent = ctx.correct;
+      rsDone.textContent = ctx.answered;
     } else {
-      const v = document.getElementById('qnum-' + i);
-      if (v && v.value.trim() !== '') answered++;
+      rsNum.textContent = ctx.answered;
     }
+  }
+
+  function makeBlockTitle(txt) {
+    const h = document.createElement('div');
+    h.className = 'quiz-block-title';
+    h.textContent = txt;
+    mount.appendChild(h);
+  }
+
+  let counter = 0;
+  function addMC(item) {
+    counter++;
+    const wrap = document.createElement('div');
+    wrap.className = 'quiz-q';
+    const { options, correctIndex } = shuffleMC(item);
+    let html = `<div class="q-num">Domanda ${counter} di ${total}</div><p style="margin:.3em 0 .6em"><strong>${item.q}</strong></p>`;
+    options.forEach((o, j) => { html += `<div class="opt" data-opt="${j}">${o}</div>`; });
+    html += `<div class="q-explain"></div>`;
+    wrap.innerHTML = html;
+    const opts = wrap.querySelectorAll('.opt');
+    const explain = wrap.querySelector('.q-explain');
+    const card = { type: 'mc', correctIndex, choice: null, answered: false, wrap, opts, explain, item };
+
+    opts.forEach(o => o.addEventListener('click', () => {
+      if (mode === 'immediate') {
+        if (card.answered) return;
+        card.answered = true;
+        card.choice = +o.dataset.opt;
+        opts.forEach(x => x.classList.add('locked'));
+        opts[correctIndex].classList.add('correct');
+        if (card.choice !== correctIndex) o.classList.add('wrong');
+        const ok = card.choice === correctIndex;
+        explain.innerHTML = (ok ? '<b>Corretto.</b> ' : '<b>Non corretto.</b> ') + item.explain;
+        explain.classList.add('show');
+        ctx.answered++; if (ok) ctx.correct++;
+        refreshBar();
+        if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([explain]);
+      } else {
+        if (ctx.submitted) return;
+        const was = card.choice !== null;
+        opts.forEach(x => x.classList.remove('sel'));
+        o.classList.add('sel');
+        card.choice = +o.dataset.opt;
+        if (!was) { ctx.answered++; refreshBar(); }
+      }
+    }));
+
+    ctx.cards.push(card);
+    mount.appendChild(wrap);
+  }
+
+  function addNum(item) {
+    counter++;
+    const wrap = document.createElement('div');
+    wrap.className = 'quiz-q';
+    let html = `<div class="q-num">Domanda ${counter} di ${total}</div><p style="margin:.3em 0 .6em"><strong>${item.q}</strong></p>`;
+    html += `<div class="answer-row"><input type="number" step="any" placeholder="Risposta (${item.unit})">`;
+    if (mode === 'immediate') html += `<button class="btn primary" type="button">Verifica</button>`;
+    html += `</div><div class="q-explain"></div>`;
+    wrap.innerHTML = html;
+    const input = wrap.querySelector('input');
+    const explain = wrap.querySelector('.q-explain');
+    const card = { type: 'num', answered: false, input, explain, item };
+
+    if (mode === 'immediate') {
+      const btn = wrap.querySelector('button');
+      btn.addEventListener('click', () => {
+        if (card.answered) return;
+        const val = parseNum(input.value);
+        if (isNaN(val)) {
+          explain.className = 'q-explain show';
+          explain.innerHTML = 'Inserisci un valore numerico per procedere.';
+          if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([explain]);
+          return;
+        }
+        card.answered = true;
+        input.disabled = true; btn.disabled = true; btn.style.opacity = .6;
+        const ok = Math.abs(val - item.answer) <= item.tol;
+        explain.className = 'q-explain show';
+        explain.innerHTML = (ok ? '<b>Corretto.</b> ' : `<b>La risposta attesa è ${item.answer} ${item.unit}.</b> `) + item.explain;
+        ctx.answered++; if (ok) ctx.correct++;
+        refreshBar();
+        if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([explain]);
+      });
+    } else {
+      input.addEventListener('input', () => {
+        const has = input.value.trim() !== '';
+        if (has && !card.answered) { card.answered = true; ctx.answered++; refreshBar(); }
+        else if (!has && card.answered) { card.answered = false; ctx.answered--; refreshBar(); }
+      });
+    }
+
+    ctx.cards.push(card);
+    mount.appendChild(wrap);
+  }
+
+  // Blocco teoria + blocco problemi
+  makeBlockTitle('Teoria');
+  data.theory.forEach(addMC);
+  makeBlockTitle('Problemi numerici');
+  data.problems.forEach(addNum);
+
+  // Pulsanti in fondo
+  const row = document.createElement('div');
+  row.className = 'btn-row';
+  row.style.cssText = 'justify-content:center;margin-top:20px';
+  if (mode === 'final') {
+    row.innerHTML = `<button class="btn primary" type="button" data-act="submit">Correggi il quiz</button><button class="btn" type="button" data-act="reset">Ricomincia</button>`;
+  } else {
+    row.innerHTML = `<button class="btn" type="button" data-act="reset">Ricomincia (rimescola)</button>`;
+  }
+  mount.appendChild(row);
+
+  // Sommario (solo finale)
+  let summary = null;
+  if (mode === 'final') {
+    summary = document.createElement('div');
+    summary.className = 'quiz-summary';
+    summary.innerHTML = `<div class="score"></div><p></p>`;
+    mount.appendChild(summary);
+  }
+
+  row.addEventListener('click', (e) => {
+    const act = e.target.dataset.act;
+    if (act === 'reset') { buildQuizPane(mountId, data, mode); }
+    else if (act === 'submit') { gradeFinal(); }
   });
-  const pct = (answered / quiz.length) * 100;
-  document.getElementById('quizProgress').style.width = pct + '%';
+
+  function gradeFinal() {
+    if (ctx.submitted) return;
+    ctx.submitted = true;
+    let score = 0;
+    ctx.cards.forEach(card => {
+      if (card.type === 'mc') {
+        card.opts.forEach(x => x.classList.add('locked'));
+        card.opts[card.correctIndex].classList.add('correct');
+        if (card.choice !== null && card.choice !== card.correctIndex) card.opts[card.choice].classList.add('wrong');
+        const ok = card.choice === card.correctIndex;
+        card.explain.innerHTML = (ok ? '<b>Corretto.</b> ' : '<b>Risposta esatta evidenziata sopra.</b> ') + card.item.explain;
+        card.explain.classList.add('show');
+        if (ok) score++;
+      } else {
+        const val = parseNum(card.input.value);
+        card.input.disabled = true;
+        const ok = !isNaN(val) && Math.abs(val - card.item.answer) <= card.item.tol;
+        card.explain.innerHTML = (ok ? '<b>Corretto.</b> ' : `<b>La risposta attesa è ${card.item.answer} ${card.item.unit}.</b> `) + card.item.explain;
+        card.explain.classList.add('show');
+        if (ok) score++;
+      }
+    });
+    if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([mount]);
+    const frac = score / total;
+    let msg;
+    if (frac === 1) msg = 'Padronanza completa: hai collegato bene teoria e calcolo su tutto il percorso. Ottimo lavoro.';
+    else if (frac >= 0.75) msg = 'Molto buono. Rivedi con calma le domande sbagliate: sei a un passo dalla piena padronanza.';
+    else if (frac >= 0.5) msg = 'Buona base. Le spiegazioni qui sopra chiariscono i punti mancati — è normale doverci tornare più volte.';
+    else msg = 'Nessun problema: questi argomenti richiedono più passaggi. Rileggi la teoria e i quiz di sezione, poi ritenta il riepilogo.';
+    summary.querySelector('.score').textContent = `${score} / ${total}`;
+    summary.querySelector('p').textContent = msg;
+    summary.classList.add('show');
+    summary.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([mount]);
 }
 
-document.getElementById('quizContainer').addEventListener('input', updateProgress);
-document.getElementById('quizContainer').addEventListener('change', updateProgress);
-
-document.getElementById('quizSubmit').addEventListener('click', () => {
-  let score = 0;
-  quiz.forEach((item, i) => {
-    const exp = document.getElementById('exp-' + i);
-    let correct = false;
-    if (item.type === 'mc') {
-      const chosen = document.querySelector(`input[name="q${i}"]:checked`);
-      const opts = document.querySelectorAll(`.opt[data-q="${i}"]`);
-      opts.forEach(o => {
-        o.classList.add('locked');
-        const j = +o.dataset.opt;
-        if (j === item.correct) o.classList.add('correct');
-        if (chosen && +chosen.value === j && j !== item.correct) o.classList.add('wrong');
-      });
-      correct = chosen && +chosen.value === item.correct;
-      exp.innerHTML = (correct ? '<b>Corretto.</b> ' : '<b>Risposta esatta evidenziata sopra.</b> ') + item.explain;
-    } else {
-      const input = document.getElementById('qnum-' + i);
-      const val = parseFloat((input.value || '').replace(',', '.'));
-      input.disabled = true;
-      correct = !isNaN(val) && Math.abs(val - item.answer) <= item.tol;
-      exp.innerHTML = (correct
-        ? '<b>Corretto.</b> '
-        : `<b>La risposta attesa è ${item.answer} ${item.unit}.</b> `) + item.explain;
-    }
-    exp.classList.add('show');
-    if (correct) score++;
+/* ---- Sotto-navigazione tra i quiz ---- */
+document.querySelectorAll('.subtab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.pane;
+    document.querySelectorAll('.subtab').forEach(t => t.classList.toggle('active', t === tab));
+    document.querySelectorAll('.quiz-pane').forEach(p => p.classList.toggle('active', p.id === target));
   });
-  if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([document.getElementById('quizContainer')]);
-
-  const summary = document.getElementById('quizSummary');
-  summary.classList.add('show');
-  document.getElementById('quizScore').textContent = `${score} / ${quiz.length}`;
-  let msg;
-  const frac = score / quiz.length;
-  if (frac === 1) msg = 'Padronanza completa: hai collegato bene teoria e calcolo. Ottimo lavoro.';
-  else if (frac >= 0.75) msg = 'Molto buono. Rivedi con calma le domande sbagliate: sei a un passo dalla piena padronanza.';
-  else if (frac >= 0.5) msg = 'Buona base. Le spiegazioni sopra chiariscono i punti mancati — è normale doverci tornare più volte.';
-  else msg = 'Nessun problema: questi argomenti richiedono più passaggi. Rileggi la teoria e riprova gli esercizi guidati, poi ritenta il quiz.';
-  document.getElementById('quizMsg').textContent = msg;
-  summary.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
-document.getElementById('quizReset').addEventListener('click', () => {
-  buildQuiz();
-  document.getElementById('quizSummary').classList.remove('show');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-
-buildQuiz();
+/* ---- Costruzione iniziale dei tre quiz ---- */
+buildQuizPane('pane-campo', QUIZ_CAMPO, 'immediate');
+buildQuizPane('pane-corrente', QUIZ_CORRENTE, 'immediate');
+buildQuizPane('pane-finale', QUIZ_FINALE, 'final');
 </script>
 </body>
 </html>
