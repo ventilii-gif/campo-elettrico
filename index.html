@@ -740,7 +740,9 @@ input:focus, select:focus { outline:2px solid var(--accent-soft); border-color:v
     <button class="subtab" data-sub="ris-campo">Campo E</button>
     <button class="subtab" data-sub="ris-forza">Forza su carica</button>
     <button class="subtab" data-sub="ris-pot">Potenziale</button>
+    <button class="subtab" data-sub="ris-uniforme">Campo uniforme</button>
     <button class="subtab" data-sub="ris-gauss">Gauss</button>
+    <button class="subtab" data-sub="ris-densita">Densità di corrente</button>
     <button class="subtab" data-sub="ris-ohm">Legge di Ohm</button>
     <button class="subtab" data-sub="ris-rr">Serie / Parallelo</button>
     <button class="subtab" data-sub="ris-potenza">Potenza</button>
@@ -750,7 +752,9 @@ input:focus, select:focus { outline:2px solid var(--accent-soft); border-color:v
   <div class="pane" id="ris-campo"></div>
   <div class="pane" id="ris-forza"></div>
   <div class="pane" id="ris-pot"></div>
+  <div class="pane" id="ris-uniforme"></div>
   <div class="pane" id="ris-gauss"></div>
+  <div class="pane" id="ris-densita"></div>
   <div class="pane" id="ris-ohm"></div>
   <div class="pane" id="ris-rr"></div>
   <div class="pane" id="ris-potenza"></div>
@@ -1456,6 +1460,8 @@ Object.keys(QUIZZES).forEach(id=> buildQuiz(id, QUIZZES[id]));
     area:[['m²',1],['cm²',1e-4],['mm²',1e-6]],
     resistivity:[['Ω·m',1]],
     flux:[['N·m²/C',1]],
+    energy:[['J',1],['mJ',1e-3],['µJ',1e-6],['eV',1.602e-19]],
+    density:[['A/m²',1],['A/mm²',1e6],['A/cm²',1e4]],
     none:[['',1]]
   };
   function unitFactor(kind,label){ const g=UNITS[kind]||UNITS.none; const f=g.find(u=>u[0]===label); return f?f[1]:1; }
@@ -1558,7 +1564,22 @@ Object.keys(QUIZZES).forEach(id=> buildQuiz(id, QUIZZES[id]));
           R:{tex:'R = \\dfrac{\\varepsilon}{i} - r',fn:v=>v.eps/v.i - v.r},
           r:{tex:'r = \\dfrac{\\varepsilon}{i} - R',fn:v=>v.eps/v.i - v.R} },
         extra:a=>[ {label:'Tensione ai morsetti', tex:'V = \\varepsilon - r\\,i', value:a.eps - a.r*a.i, kind:'volt'},
-                   {label:'Potenza sul carico', tex:'P = R\\,i^2', value:a.R*a.i*a.i, kind:'power'} ] }] }
+                   {label:'Potenza sul carico', tex:'P = R\\,i^2', value:a.R*a.i*a.i, kind:'power'} ] }] },
+
+    { mount:'ris-uniforme', title:'Campo uniforme e lavoro', note:'Tra due lastre piane parallele il campo è uniforme; il lavoro per spostare una carica dipende solo dalla differenza di potenziale.',
+      variants:[
+        { label:'Campo: E = ΔV/d', general:'E = \\dfrac{\\Delta V}{d}',
+          vars:[{key:'E',sym:'E',plain:'E — campo',kind:'efield'},{key:'dV',sym:'\\Delta V',plain:'ΔV — d.d.p.',kind:'volt'},{key:'d',sym:'d',plain:'d — distanza',kind:'length',def:'cm'}],
+          targets:{ E:{tex:'E = \\dfrac{\\Delta V}{d}',fn:v=>v.dV/v.d}, dV:{tex:'\\Delta V = E\\,d',fn:v=>v.E*v.d}, d:{tex:'d = \\dfrac{\\Delta V}{E}',fn:v=>v.dV/v.E} } },
+        { label:'Lavoro: W = q·ΔV', general:'W = q\\,\\Delta V',
+          vars:[{key:'W',sym:'W',plain:'W — lavoro',kind:'energy'},{key:'q',sym:'q',plain:'q — carica',kind:'charge',def:'µC'},{key:'dV',sym:'\\Delta V',plain:'ΔV — d.d.p.',kind:'volt'}],
+          targets:{ W:{tex:'W = q\\,\\Delta V',fn:v=>v.q*v.dV}, q:{tex:'q = \\dfrac{W}{\\Delta V}',fn:v=>v.W/v.dV}, dV:{tex:'\\Delta V = \\dfrac{W}{q}',fn:v=>v.W/v.q} } }
+      ] },
+
+    { mount:'ris-densita', title:'Densità di corrente', note:'Descrive come la corrente si distribuisce nella sezione del conduttore.',
+      variants:[{ label:'', general:'J = \\dfrac{i}{A}',
+        vars:[{key:'J',sym:'J',plain:'J — densità',kind:'density'},{key:'i',sym:'i',plain:'i — corrente',kind:'current',def:'mA'},{key:'A',sym:'A',plain:'A — sezione',kind:'area',def:'mm²'}],
+        targets:{ J:{tex:'J = \\dfrac{i}{A}',fn:v=>v.i/v.A}, i:{tex:'i = J\\,A',fn:v=>v.J*v.A}, A:{tex:'A = \\dfrac{i}{J}',fn:v=>v.i/v.J} } }] }
   ];
 
   function makeSolver(spec){
