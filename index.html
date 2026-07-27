@@ -235,6 +235,23 @@ input:focus, select:focus { outline:2px solid var(--accent-soft); border-color:v
 .quiz-summary.show { display:block; }
 .quiz-summary .score { font-size:2.2rem; font-weight:800; color:var(--accent); }
 
+/* ---------- RISOLUTORE ---------- */
+.solver { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow); margin:16px 0; }
+.solver h3 { margin-top:.1em; }
+.formula-main { background:var(--surface-2); border-radius:10px; padding:6px 14px; margin:8px 0; overflow-x:auto; }
+.solver-row { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end; margin:14px 0; }
+.solver-field { display:flex; flex-direction:column; gap:5px; }
+.solver-field > label { font-size:.82rem; color:var(--muted); font-weight:600; }
+.solver-field .inp { display:flex; gap:6px; align-items:center; }
+.solver-field input[type="number"] { width:120px; }
+.solver-field select { padding:9px 10px; }
+.res-kicker { font-size:.78rem; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); font-weight:700; margin-bottom:6px; }
+.res-data { font-size:.92rem; margin:.4em 0; }
+.solver-result { margin-top:14px; padding:14px 16px; border-radius:10px; background:var(--surface-2); border:1px solid var(--border); display:none; }
+.solver-result.show { display:block; animation:fade .3s ease; }
+.res-final { background:var(--surface); border-left:4px solid var(--pos); border-radius:0 8px 8px 0; padding:8px 14px; margin-top:8px; font-size:1.12rem; }
+.res-unit { font-weight:700; color:var(--pos); margin-left:2px; }
+
 /* ---------- INTRO / SVG ---------- */
 .hero { background:linear-gradient(135deg, var(--accent-soft), var(--pos-soft));
   border:1px solid var(--border); border-radius:var(--radius); padding:26px 24px; box-shadow:var(--shadow); }
@@ -286,6 +303,7 @@ input:focus, select:focus { outline:2px solid var(--accent-soft); border-color:v
       <button class="nav-btn" data-mod="mod2">2 · Potenziale e Gauss</button>
       <button class="nav-btn" data-mod="mod3">3 · Corrente e Ohm</button>
       <button class="nav-btn" data-mod="mod4">4 · Circuiti</button>
+      <button class="nav-btn" data-mod="risolutore">Risolutore</button>
     </nav>
     <button class="theme-toggle" id="themeToggle" aria-label="Cambia tema chiaro/scuro" title="Modalità giorno/notte">
       <span class="knob" id="knob">☾</span>
@@ -706,6 +724,37 @@ input:focus, select:focus { outline:2px solid var(--accent-soft); border-color:v
 
   <div class="pane" id="m4-eser"><div class="eser-list" id="eser-m4"></div></div>
   <div class="pane" id="m4-quiz"><div id="quiz-m4"></div></div>
+</section>
+
+<!-- ============================================================
+     RISOLUTORE (scheda a parte, dopo i moduli)
+     ============================================================ -->
+<section id="risolutore" class="module">
+  <div class="module-head" style="border-left-color:var(--pos)">
+    <div class="m-kicker" style="color:var(--pos)">Strumento</div>
+    <h1>Risolutore di problemi</h1>
+    <p class="lead">Scegli il tipo di problema nelle sotto-schede, indica la grandezza da calcolare, inserisci i dati noti con le loro unità di misura e ottieni la formula usata, i dati e il risultato. Comodo per verificare gli esercizi o impostare un calcolo.</p>
+  </div>
+  <div class="subnav" role="tablist">
+    <button class="subtab active" data-sub="ris-coulomb">Coulomb</button>
+    <button class="subtab" data-sub="ris-campo">Campo E</button>
+    <button class="subtab" data-sub="ris-forza">Forza su carica</button>
+    <button class="subtab" data-sub="ris-pot">Potenziale</button>
+    <button class="subtab" data-sub="ris-gauss">Gauss</button>
+    <button class="subtab" data-sub="ris-ohm">Legge di Ohm</button>
+    <button class="subtab" data-sub="ris-rr">Serie / Parallelo</button>
+    <button class="subtab" data-sub="ris-potenza">Potenza</button>
+    <button class="subtab" data-sub="ris-gen">Generatore reale</button>
+  </div>
+  <div class="pane active" id="ris-coulomb"></div>
+  <div class="pane" id="ris-campo"></div>
+  <div class="pane" id="ris-forza"></div>
+  <div class="pane" id="ris-pot"></div>
+  <div class="pane" id="ris-gauss"></div>
+  <div class="pane" id="ris-ohm"></div>
+  <div class="pane" id="ris-rr"></div>
+  <div class="pane" id="ris-potenza"></div>
+  <div class="pane" id="ris-gen"></div>
 </section>
 
 <div class="footer-note">
@@ -1389,6 +1438,202 @@ function buildQuiz(mountId, data){
   if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([mount]);
 }
 Object.keys(QUIZZES).forEach(id=> buildQuiz(id, QUIZZES[id]));
+
+/* ============================================================
+   RISOLUTORE DI PROBLEMI — calcolatori con scelta dell'incognita
+   ============================================================ */
+(function(){
+  const K=8.99e9, EPS0=8.854e-12;
+  const UNITS={
+    charge:[['C',1],['mC',1e-3],['µC',1e-6],['nC',1e-9],['pC',1e-12]],
+    length:[['m',1],['cm',1e-2],['mm',1e-3]],
+    force:[['N',1],['mN',1e-3],['kN',1e3]],
+    efield:[['N/C',1],['V/m',1],['kN/C',1e3]],
+    volt:[['V',1],['mV',1e-3],['kV',1e3]],
+    res:[['Ω',1],['mΩ',1e-3],['kΩ',1e3],['MΩ',1e6]],
+    current:[['A',1],['mA',1e-3],['µA',1e-6]],
+    power:[['W',1],['mW',1e-3],['kW',1e3]],
+    area:[['m²',1],['cm²',1e-4],['mm²',1e-6]],
+    resistivity:[['Ω·m',1]],
+    flux:[['N·m²/C',1]],
+    none:[['',1]]
+  };
+  function unitFactor(kind,label){ const g=UNITS[kind]||UNITS.none; const f=g.find(u=>u[0]===label); return f?f[1]:1; }
+  function siLabel(kind){ const g=UNITS[kind]||UNITS.none; const f=g.find(u=>u[1]===1); return f?f[0]:g[0][0]; }
+  function fmtTex(x){
+    if(!isFinite(x)) return '\\text{non definito}';
+    const ax=Math.abs(x);
+    if(ax!==0 && (ax>=1e4 || ax<1e-3)){
+      let e=Math.floor(Math.log10(ax)); let m=x/Math.pow(10,e); m=Math.round(m*100)/100;
+      if(Math.abs(m)>=10){ m/=10; e++; }
+      return m.toFixed(2).replace('.',',')+'\\times10^{'+e+'}';
+    }
+    return (Math.round(x*1e6)/1e6).toString().replace('.',',');
+  }
+
+  const SOLVERS=[
+    { mount:'ris-coulomb', title:'Legge di Coulomb', note:'Le cariche sono prese in valore assoluto per l\'intensità della forza; la forza è repulsiva tra cariche concordi, attrattiva tra discordi.',
+      variants:[{ label:'', general:'F = k\\,\\dfrac{|q_1\\,q_2|}{r^2}',
+        vars:[{key:'F',sym:'F',plain:'F — forza',kind:'force'},{key:'q1',sym:'q_1',plain:'q₁ — carica 1',kind:'charge',def:'µC'},
+              {key:'q2',sym:'q_2',plain:'q₂ — carica 2',kind:'charge',def:'µC'},{key:'r',sym:'r',plain:'r — distanza',kind:'length',def:'m'}],
+        targets:{ F:{tex:'F = k\\dfrac{|q_1 q_2|}{r^2}',fn:v=>K*Math.abs(v.q1*v.q2)/(v.r*v.r)},
+          q1:{tex:'q_1 = \\dfrac{F\\,r^2}{k\\,|q_2|}',fn:v=>v.F*v.r*v.r/(K*Math.abs(v.q2))},
+          q2:{tex:'q_2 = \\dfrac{F\\,r^2}{k\\,|q_1|}',fn:v=>v.F*v.r*v.r/(K*Math.abs(v.q1))},
+          r:{tex:'r = \\sqrt{\\dfrac{k\\,|q_1 q_2|}{F}}',fn:v=>Math.sqrt(K*Math.abs(v.q1*v.q2)/v.F)} } }] },
+
+    { mount:'ris-campo', title:'Campo elettrico di una carica puntiforme',
+      variants:[{ label:'', general:'E = k\\,\\dfrac{|Q|}{r^2}',
+        vars:[{key:'E',sym:'E',plain:'E — campo',kind:'efield'},{key:'Q',sym:'Q',plain:'Q — carica',kind:'charge',def:'µC'},
+              {key:'r',sym:'r',plain:'r — distanza',kind:'length',def:'m'}],
+        targets:{ E:{tex:'E = k\\dfrac{|Q|}{r^2}',fn:v=>K*Math.abs(v.Q)/(v.r*v.r)},
+          Q:{tex:'Q = \\dfrac{E\\,r^2}{k}',fn:v=>v.E*v.r*v.r/K},
+          r:{tex:'r = \\sqrt{\\dfrac{k\\,|Q|}{E}}',fn:v=>Math.sqrt(K*Math.abs(v.Q)/v.E)} } }] },
+
+    { mount:'ris-forza', title:'Forza su una carica in un campo', note:'Relazione tra campo e forza: \\(\\vec F = q\\vec E\\).',
+      variants:[{ label:'', general:'F = |q|\\,E',
+        vars:[{key:'F',sym:'F',plain:'F — forza',kind:'force'},{key:'q',sym:'q',plain:'q — carica',kind:'charge',def:'µC'},
+              {key:'E',sym:'E',plain:'E — campo',kind:'efield'}],
+        targets:{ F:{tex:'F = |q|\\,E',fn:v=>Math.abs(v.q)*v.E},
+          q:{tex:'q = \\dfrac{F}{E}',fn:v=>v.F/v.E},
+          E:{tex:'E = \\dfrac{F}{|q|}',fn:v=>v.F/Math.abs(v.q)} } }] },
+
+    { mount:'ris-pot', title:'Potenziale di una carica puntiforme', note:'Con potenziale nullo all\'infinito.',
+      variants:[{ label:'', general:'V = k\\,\\dfrac{Q}{r}',
+        vars:[{key:'V',sym:'V',plain:'V — potenziale',kind:'volt'},{key:'Q',sym:'Q',plain:'Q — carica',kind:'charge',def:'nC'},
+              {key:'r',sym:'r',plain:'r — distanza',kind:'length',def:'m'}],
+        targets:{ V:{tex:'V = k\\dfrac{Q}{r}',fn:v=>K*v.Q/v.r},
+          Q:{tex:'Q = \\dfrac{V\\,r}{k}',fn:v=>v.V*v.r/K},
+          r:{tex:'r = \\dfrac{k\\,Q}{V}',fn:v=>K*v.Q/v.V} } }] },
+
+    { mount:'ris-gauss', title:'Teorema di Gauss (flusso)', note:'Il flusso attraverso una superficie chiusa dipende solo dalla carica racchiusa.',
+      variants:[{ label:'', general:'\\Phi = \\dfrac{Q_{int}}{\\varepsilon_0}',
+        vars:[{key:'Phi',sym:'\\Phi',plain:'Φ — flusso',kind:'flux'},{key:'Q',sym:'Q_{int}',plain:'Q — carica racchiusa',kind:'charge',def:'µC'}],
+        targets:{ Phi:{tex:'\\Phi = \\dfrac{Q_{int}}{\\varepsilon_0}',fn:v=>v.Q/EPS0},
+          Q:{tex:'Q_{int} = \\Phi\\,\\varepsilon_0',fn:v=>v.Phi*EPS0} } }] },
+
+    { mount:'ris-ohm', title:'Leggi di Ohm',
+      variants:[
+        { label:'Prima legge: V = R·i', general:'V = R\\,i',
+          vars:[{key:'V',sym:'V',plain:'V — tensione',kind:'volt'},{key:'R',sym:'R',plain:'R — resistenza',kind:'res'},
+                {key:'i',sym:'i',plain:'i — corrente',kind:'current',def:'mA'}],
+          targets:{ V:{tex:'V = R\\,i',fn:v=>v.R*v.i}, R:{tex:'R = \\dfrac{V}{i}',fn:v=>v.V/v.i}, i:{tex:'i = \\dfrac{V}{R}',fn:v=>v.V/v.R} } },
+        { label:'Seconda legge: R = ρ·ℓ/A', general:'R = \\rho\\,\\dfrac{\\ell}{A}',
+          vars:[{key:'R',sym:'R',plain:'R — resistenza',kind:'res'},{key:'rho',sym:'\\rho',plain:'ρ — resistività',kind:'resistivity'},
+                {key:'l',sym:'\\ell',plain:'ℓ — lunghezza',kind:'length',def:'m'},{key:'A',sym:'A',plain:'A — sezione',kind:'area',def:'mm²'}],
+          targets:{ R:{tex:'R = \\rho\\dfrac{\\ell}{A}',fn:v=>v.rho*v.l/v.A}, rho:{tex:'\\rho = \\dfrac{R\\,A}{\\ell}',fn:v=>v.R*v.A/v.l},
+            l:{tex:'\\ell = \\dfrac{R\\,A}{\\rho}',fn:v=>v.R*v.A/v.rho}, A:{tex:'A = \\rho\\dfrac{\\ell}{R}',fn:v=>v.rho*v.l/v.R} } }
+      ] },
+
+    { mount:'ris-rr', title:'Resistori in serie e in parallelo',
+      variants:[
+        { label:'In serie', general:'R_{eq}=R_1+R_2',
+          vars:[{key:'Req',sym:'R_{eq}',plain:'R eq',kind:'res'},{key:'R1',sym:'R_1',plain:'R₁',kind:'res'},{key:'R2',sym:'R_2',plain:'R₂',kind:'res'}],
+          targets:{ Req:{tex:'R_{eq}=R_1+R_2',fn:v=>v.R1+v.R2}, R1:{tex:'R_1=R_{eq}-R_2',fn:v=>v.Req-v.R2}, R2:{tex:'R_2=R_{eq}-R_1',fn:v=>v.Req-v.R1} } },
+        { label:'In parallelo', general:'\\dfrac{1}{R_{eq}}=\\dfrac{1}{R_1}+\\dfrac{1}{R_2}',
+          vars:[{key:'Req',sym:'R_{eq}',plain:'R eq',kind:'res'},{key:'R1',sym:'R_1',plain:'R₁',kind:'res'},{key:'R2',sym:'R_2',plain:'R₂',kind:'res'}],
+          targets:{ Req:{tex:'R_{eq}=\\dfrac{R_1 R_2}{R_1+R_2}',fn:v=>v.R1*v.R2/(v.R1+v.R2)},
+            R1:{tex:'R_1=\\dfrac{R_{eq}R_2}{R_2-R_{eq}}',fn:v=>v.Req*v.R2/(v.R2-v.Req)},
+            R2:{tex:'R_2=\\dfrac{R_{eq}R_1}{R_1-R_{eq}}',fn:v=>v.Req*v.R1/(v.R1-v.Req)} } }
+      ] },
+
+    { mount:'ris-potenza', title:'Potenza ed effetto Joule', note:'Le tre forme sono equivalenti tramite \\(V=R\\,i\\): scegli quella con le grandezze che conosci.',
+      variants:[
+        { label:'P = V·i', general:'P = V\\,i',
+          vars:[{key:'P',sym:'P',plain:'P — potenza',kind:'power'},{key:'V',sym:'V',plain:'V — tensione',kind:'volt'},{key:'i',sym:'i',plain:'i — corrente',kind:'current',def:'mA'}],
+          targets:{ P:{tex:'P = V\\,i',fn:v=>v.V*v.i}, V:{tex:'V = \\dfrac{P}{i}',fn:v=>v.P/v.i}, i:{tex:'i = \\dfrac{P}{V}',fn:v=>v.P/v.V} } },
+        { label:'P = R·i²', general:'P = R\\,i^2',
+          vars:[{key:'P',sym:'P',plain:'P — potenza',kind:'power'},{key:'R',sym:'R',plain:'R — resistenza',kind:'res'},{key:'i',sym:'i',plain:'i — corrente',kind:'current',def:'mA'}],
+          targets:{ P:{tex:'P = R\\,i^2',fn:v=>v.R*v.i*v.i}, R:{tex:'R = \\dfrac{P}{i^2}',fn:v=>v.P/(v.i*v.i)}, i:{tex:'i = \\sqrt{\\dfrac{P}{R}}',fn:v=>Math.sqrt(v.P/v.R)} } },
+        { label:'P = V²/R', general:'P = \\dfrac{V^2}{R}',
+          vars:[{key:'P',sym:'P',plain:'P — potenza',kind:'power'},{key:'V',sym:'V',plain:'V — tensione',kind:'volt'},{key:'R',sym:'R',plain:'R — resistenza',kind:'res'}],
+          targets:{ P:{tex:'P = \\dfrac{V^2}{R}',fn:v=>v.V*v.V/v.R}, V:{tex:'V = \\sqrt{P\\,R}',fn:v=>Math.sqrt(v.P*v.R)}, R:{tex:'R = \\dfrac{V^2}{P}',fn:v=>v.V*v.V/v.P} } }
+      ] },
+
+    { mount:'ris-gen', title:'Generatore reale (f.e.m. e resistenza interna)',
+      variants:[{ label:'', general:'i = \\dfrac{\\varepsilon}{R+r}',
+        vars:[{key:'eps',sym:'\\varepsilon',plain:'ε — f.e.m.',kind:'volt'},{key:'R',sym:'R',plain:'R — carico',kind:'res'},
+              {key:'r',sym:'r',plain:'r — res. interna',kind:'res'},{key:'i',sym:'i',plain:'i — corrente',kind:'current',def:'mA'}],
+        targets:{ i:{tex:'i = \\dfrac{\\varepsilon}{R+r}',fn:v=>v.eps/(v.R+v.r)},
+          eps:{tex:'\\varepsilon = i\\,(R+r)',fn:v=>v.i*(v.R+v.r)},
+          R:{tex:'R = \\dfrac{\\varepsilon}{i} - r',fn:v=>v.eps/v.i - v.r},
+          r:{tex:'r = \\dfrac{\\varepsilon}{i} - R',fn:v=>v.eps/v.i - v.R} },
+        extra:a=>[ {label:'Tensione ai morsetti', tex:'V = \\varepsilon - r\\,i', value:a.eps - a.r*a.i, kind:'volt'},
+                   {label:'Potenza sul carico', tex:'P = R\\,i^2', value:a.R*a.i*a.i, kind:'power'} ] }] }
+  ];
+
+  function makeSolver(spec){
+    const mount=document.getElementById(spec.mount);
+    const state={ variant:0, target:null, values:{} };
+    function cv(){ return spec.variants[state.variant]; }
+    function saveValues(box){
+      box.querySelectorAll('input[data-k]').forEach(inp=>{ const k=inp.dataset.k;
+        const us=box.querySelector('select[data-uk="'+k+'"]');
+        const vv=cv().vars.find(x=>x.key===k); const unit=us?us.value:(vv?siLabel(vv.kind):'');
+        state.values[k]={raw:inp.value, unit}; });
+    }
+    function render(){
+      const v=cv();
+      if(!state.target || !v.targets[state.target]) state.target=Object.keys(v.targets)[0];
+      mount.innerHTML='';
+      const box=document.createElement('div'); box.className='solver';
+      let html=`<h3>${spec.title}</h3>`;
+      if(spec.note) html+=`<p style="font-size:.9rem;color:var(--muted);margin:.2em 0 .6em">${spec.note}</p>`;
+      html+=`<div class="formula-main">\\[ ${v.general} \\]</div>`;
+      html+=`<div class="solver-row">`;
+      if(spec.variants.length>1){
+        html+=`<div class="solver-field"><label>Formula</label><select data-role="variant">`+
+          spec.variants.map((vv,i)=>`<option value="${i}" ${i===state.variant?'selected':''}>${vv.label}</option>`).join('')+`</select></div>`;
+      }
+      html+=`<div class="solver-field"><label>Calcola</label><select data-role="target">`+
+        Object.keys(v.targets).map(k=>{ const vv=v.vars.find(x=>x.key===k); return `<option value="${k}" ${k===state.target?'selected':''}>${vv?vv.plain:k}</option>`; }).join('')+`</select></div>`;
+      html+=`</div>`;
+      html+=`<div class="solver-row" data-role="fields"></div>`;
+      html+=`<div class="btn-row"><button class="btn primary" type="button" data-role="solve">Risolvi</button><button class="btn" type="button" data-role="clear">Pulisci</button></div>`;
+      html+=`<div class="solver-result" data-role="result"></div>`;
+      box.innerHTML=html; mount.appendChild(box);
+      const fw=box.querySelector('[data-role="fields"]');
+      v.vars.filter(x=>x.key!==state.target).forEach(vv=>{
+        const g=UNITS[vv.kind]||UNITS.none; const st=state.values[vv.key]||{raw:'',unit:(vv.def||g[0][0])};
+        const f=document.createElement('div'); f.className='solver-field';
+        f.innerHTML=`<label>\\(${vv.sym}\\)</label><div class="inp"><input type="number" step="any" data-k="${vv.key}" placeholder="${vv.plain}" value="${st.raw}">`+
+          (g.length>1 ? `<select data-uk="${vv.key}">`+g.map(u=>`<option ${u[0]===st.unit?'selected':''}>${u[0]}</option>`).join('')+`</select>`
+                      : `<span style="color:var(--muted);font-size:.85rem">${g[0][0]}</span>`)+`</div>`;
+        fw.appendChild(f);
+      });
+      const vsel=box.querySelector('[data-role="variant"]');
+      if(vsel) vsel.addEventListener('change',e=>{ saveValues(box); state.variant=+e.target.value; state.target=null; render(); });
+      box.querySelector('[data-role="target"]').addEventListener('change',e=>{ saveValues(box); state.target=e.target.value; render(); });
+      box.querySelector('[data-role="solve"]').addEventListener('click',()=>{ saveValues(box); solve(box); });
+      box.querySelector('[data-role="clear"]').addEventListener('click',()=>{ state.values={}; render(); });
+      if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([box]);
+    }
+    function solve(box){
+      const v=cv(); const res=box.querySelector('[data-role="result"]');
+      const valsSI={}; let missing=false;
+      v.vars.filter(x=>x.key!==state.target).forEach(vv=>{ const st=state.values[vv.key];
+        const num=st?parseFloat(String(st.raw).replace(',','.')):NaN; if(isNaN(num)) missing=true;
+        valsSI[vv.key]=num*unitFactor(vv.kind, st?st.unit:''); });
+      if(missing){ res.className='solver-result show'; res.innerHTML='Inserisci un valore numerico in tutti i campi.';
+        if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([res]); return; }
+      const out=v.targets[state.target].fn(valsSI); const tvar=v.vars.find(x=>x.key===state.target);
+      if(!isFinite(out)){ res.className='solver-result show';
+        res.innerHTML='La combinazione inserita non è valida (per esempio una divisione per zero o una radice di numero negativo).'; return; }
+      const allSI=Object.assign({},valsSI); allSI[state.target]=out;
+      const dataList=v.vars.filter(x=>x.key!==state.target).map(vv=>{ const st=state.values[vv.key];
+        return `\\(${vv.sym}\\) = ${String(st.raw).replace('.',',')} ${st.unit||siLabel(vv.kind)}`; }).join(',&nbsp;&nbsp;');
+      let html=`<div class="res-kicker">Risoluzione</div>`;
+      html+=`<div class="formula-main">\\[ ${v.targets[state.target].tex} \\]</div>`;
+      html+=`<p class="res-data"><b>Dati:</b> ${dataList}</p>`;
+      html+=`<div class="res-final">\\( ${tvar.sym} \\) = \\( ${fmtTex(out)} \\)<span class="res-unit">${siLabel(tvar.kind)}</span></div>`;
+      if(v.extra){ (v.extra(allSI)||[]).forEach(e=>{ if(isFinite(e.value))
+        html+=`<p class="res-data" style="margin-top:8px"><b>${e.label}:</b> \\( ${e.tex} = ${fmtTex(e.value)} \\) ${siLabel(e.kind)}</p>`; }); }
+      res.className='solver-result show'; res.innerHTML=html;
+      if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([res]);
+    }
+    render();
+  }
+  SOLVERS.forEach(makeSolver);
+})();
 </script>
 </body>
 </html>
