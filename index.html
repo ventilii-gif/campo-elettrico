@@ -740,24 +740,34 @@ input:focus, select:focus { outline:2px solid var(--accent-soft); border-color:v
     <button class="subtab" data-sub="ris-campo">Campo E</button>
     <button class="subtab" data-sub="ris-forza">Forza su carica</button>
     <button class="subtab" data-sub="ris-pot">Potenziale</button>
+    <button class="subtab" data-sub="ris-energia">Energia potenziale</button>
     <button class="subtab" data-sub="ris-uniforme">Campo uniforme</button>
     <button class="subtab" data-sub="ris-gauss">Gauss</button>
+    <button class="subtab" data-sub="ris-distrib">Piano e filo</button>
     <button class="subtab" data-sub="ris-densita">Densità di corrente</button>
+    <button class="subtab" data-sub="ris-caricacorr">Carica e corrente</button>
     <button class="subtab" data-sub="ris-ohm">Legge di Ohm</button>
+    <button class="subtab" data-sub="ris-temp">Resistenza e temperatura</button>
     <button class="subtab" data-sub="ris-rr">Serie / Parallelo</button>
     <button class="subtab" data-sub="ris-potenza">Potenza</button>
+    <button class="subtab" data-sub="ris-joule">Energia e Joule</button>
     <button class="subtab" data-sub="ris-gen">Generatore reale</button>
   </div>
   <div class="pane active" id="ris-coulomb"></div>
   <div class="pane" id="ris-campo"></div>
   <div class="pane" id="ris-forza"></div>
   <div class="pane" id="ris-pot"></div>
+  <div class="pane" id="ris-energia"></div>
   <div class="pane" id="ris-uniforme"></div>
   <div class="pane" id="ris-gauss"></div>
+  <div class="pane" id="ris-distrib"></div>
   <div class="pane" id="ris-densita"></div>
+  <div class="pane" id="ris-caricacorr"></div>
   <div class="pane" id="ris-ohm"></div>
+  <div class="pane" id="ris-temp"></div>
   <div class="pane" id="ris-rr"></div>
   <div class="pane" id="ris-potenza"></div>
+  <div class="pane" id="ris-joule"></div>
   <div class="pane" id="ris-gen"></div>
 </section>
 
@@ -1460,8 +1470,13 @@ Object.keys(QUIZZES).forEach(id=> buildQuiz(id, QUIZZES[id]));
     area:[['m²',1],['cm²',1e-4],['mm²',1e-6]],
     resistivity:[['Ω·m',1]],
     flux:[['N·m²/C',1]],
-    energy:[['J',1],['mJ',1e-3],['µJ',1e-6],['eV',1.602e-19]],
+    energy:[['J',1],['mJ',1e-3],['µJ',1e-6],['kJ',1e3],['eV',1.602e-19]],
     density:[['A/m²',1],['A/mm²',1e6],['A/cm²',1e4]],
+    time:[['s',1],['ms',1e-3],['min',60],['h',3600]],
+    sigma:[['C/m²',1],['µC/m²',1e-6],['nC/m²',1e-9]],
+    lambda:[['C/m',1],['µC/m',1e-6],['nC/m',1e-9]],
+    tempdelta:[['°C',1],['K',1]],
+    alpha:[['1/°C',1],['1/K',1]],
     none:[['',1]]
   };
   function unitFactor(kind,label){ const g=UNITS[kind]||UNITS.none; const f=g.find(u=>u[0]===label); return f?f[1]:1; }
@@ -1579,7 +1594,55 @@ Object.keys(QUIZZES).forEach(id=> buildQuiz(id, QUIZZES[id]));
     { mount:'ris-densita', title:'Densità di corrente', note:'Descrive come la corrente si distribuisce nella sezione del conduttore.',
       variants:[{ label:'', general:'J = \\dfrac{i}{A}',
         vars:[{key:'J',sym:'J',plain:'J — densità',kind:'density'},{key:'i',sym:'i',plain:'i — corrente',kind:'current',def:'mA'},{key:'A',sym:'A',plain:'A — sezione',kind:'area',def:'mm²'}],
-        targets:{ J:{tex:'J = \\dfrac{i}{A}',fn:v=>v.i/v.A}, i:{tex:'i = J\\,A',fn:v=>v.J*v.A}, A:{tex:'A = \\dfrac{i}{J}',fn:v=>v.i/v.J} } }] }
+        targets:{ J:{tex:'J = \\dfrac{i}{A}',fn:v=>v.i/v.A}, i:{tex:'i = J\\,A',fn:v=>v.J*v.A}, A:{tex:'A = \\dfrac{i}{J}',fn:v=>v.i/v.J} } }] },
+
+    { mount:'ris-energia', title:'Energia potenziale elettrica (due cariche)', note:'L\'energia è positiva per cariche concordi e negativa per cariche discordi: inserisci le cariche con il loro segno.',
+      variants:[{ label:'', general:'U = k\\,\\dfrac{q_1\\,q_2}{r}',
+        vars:[{key:'U',sym:'U',plain:'U — energia',kind:'energy'},{key:'q1',sym:'q_1',plain:'q₁ — carica 1',kind:'charge',def:'µC'},
+              {key:'q2',sym:'q_2',plain:'q₂ — carica 2',kind:'charge',def:'µC'},{key:'r',sym:'r',plain:'r — distanza',kind:'length',def:'m'}],
+        targets:{ U:{tex:'U = k\\dfrac{q_1 q_2}{r}',fn:v=>K*v.q1*v.q2/v.r},
+          q1:{tex:'q_1 = \\dfrac{U\\,r}{k\\,q_2}',fn:v=>v.U*v.r/(K*v.q2)},
+          q2:{tex:'q_2 = \\dfrac{U\\,r}{k\\,q_1}',fn:v=>v.U*v.r/(K*v.q1)},
+          r:{tex:'r = k\\dfrac{q_1 q_2}{U}',fn:v=>K*v.q1*v.q2/v.U} } }] },
+
+    { mount:'ris-distrib', title:'Campo di piano e filo (Gauss)', note:'Casi ricavabili dal teorema di Gauss sfruttando la simmetria della distribuzione.',
+      variants:[
+        { label:'Piano infinito: E = σ/2ε₀', general:'E = \\dfrac{\\sigma}{2\\varepsilon_0}',
+          vars:[{key:'E',sym:'E',plain:'E — campo',kind:'efield'},{key:'sigma',sym:'\\sigma',plain:'σ — densità sup.',kind:'sigma',def:'µC/m²'}],
+          targets:{ E:{tex:'E = \\dfrac{\\sigma}{2\\varepsilon_0}',fn:v=>v.sigma/(2*EPS0)}, sigma:{tex:'\\sigma = 2\\varepsilon_0 E',fn:v=>2*EPS0*v.E} } },
+        { label:'Filo infinito: E = λ/2πε₀r', general:'E = \\dfrac{\\lambda}{2\\pi\\varepsilon_0\\,r}',
+          vars:[{key:'E',sym:'E',plain:'E — campo',kind:'efield'},{key:'lambda',sym:'\\lambda',plain:'λ — densità lin.',kind:'lambda',def:'µC/m'},{key:'r',sym:'r',plain:'r — distanza',kind:'length',def:'m'}],
+          targets:{ E:{tex:'E = \\dfrac{\\lambda}{2\\pi\\varepsilon_0 r}',fn:v=>v.lambda/(2*Math.PI*EPS0*v.r)},
+            lambda:{tex:'\\lambda = 2\\pi\\varepsilon_0 r\\,E',fn:v=>2*Math.PI*EPS0*v.r*v.E},
+            r:{tex:'r = \\dfrac{\\lambda}{2\\pi\\varepsilon_0 E}',fn:v=>v.lambda/(2*Math.PI*EPS0*v.E)} } }
+      ] },
+
+    { mount:'ris-caricacorr', title:'Carica e corrente', note:'La corrente è la carica che attraversa una sezione nell\'unità di tempo.',
+      variants:[{ label:'', general:'i = \\dfrac{q}{t}',
+        vars:[{key:'i',sym:'i',plain:'i — corrente',kind:'current',def:'mA'},{key:'q',sym:'q',plain:'q — carica',kind:'charge',def:'C'},{key:'t',sym:'t',plain:'t — tempo',kind:'time',def:'s'}],
+        targets:{ i:{tex:'i = \\dfrac{q}{t}',fn:v=>v.q/v.t}, q:{tex:'q = i\\,t',fn:v=>v.i*v.t}, t:{tex:'t = \\dfrac{q}{i}',fn:v=>v.q/v.i} } }] },
+
+    { mount:'ris-temp', title:'Resistenza e temperatura', note:'Nei metalli la resistenza cresce con la temperatura. \\(\\Delta T\\) è la variazione rispetto alla temperatura di riferimento (per il rame \\(\\alpha\\approx0{,}0039\\ \\mathrm{°C^{-1}}\\)).',
+      variants:[{ label:'', general:'R = R_0\\,[\\,1+\\alpha\\,\\Delta T\\,]',
+        vars:[{key:'R',sym:'R',plain:'R — resistenza',kind:'res'},{key:'R0',sym:'R_0',plain:'R₀ — res. iniziale',kind:'res'},
+              {key:'alpha',sym:'\\alpha',plain:'α — coeff. termico',kind:'alpha'},{key:'dT',sym:'\\Delta T',plain:'ΔT — variazione',kind:'tempdelta'}],
+        targets:{ R:{tex:'R = R_0(1+\\alpha\\,\\Delta T)',fn:v=>v.R0*(1+v.alpha*v.dT)},
+          R0:{tex:'R_0 = \\dfrac{R}{1+\\alpha\\,\\Delta T}',fn:v=>v.R/(1+v.alpha*v.dT)},
+          alpha:{tex:'\\alpha = \\dfrac{R/R_0 - 1}{\\Delta T}',fn:v=>(v.R/v.R0-1)/v.dT},
+          dT:{tex:'\\Delta T = \\dfrac{R/R_0 - 1}{\\alpha}',fn:v=>(v.R/v.R0-1)/v.alpha} } }] },
+
+    { mount:'ris-joule', title:'Energia elettrica ed effetto Joule (nel tempo)', note:'Energia consumata o dissipata in un intervallo di tempo t.',
+      variants:[
+        { label:'W = P·t', general:'W = P\\,t',
+          vars:[{key:'W',sym:'W',plain:'W — energia',kind:'energy'},{key:'P',sym:'P',plain:'P — potenza',kind:'power'},{key:'t',sym:'t',plain:'t — tempo',kind:'time',def:'s'}],
+          targets:{ W:{tex:'W = P\\,t',fn:v=>v.P*v.t}, P:{tex:'P = \\dfrac{W}{t}',fn:v=>v.W/v.t}, t:{tex:'t = \\dfrac{W}{P}',fn:v=>v.W/v.P} } },
+        { label:'W = V·i·t', general:'W = V\\,i\\,t',
+          vars:[{key:'W',sym:'W',plain:'W — energia',kind:'energy'},{key:'V',sym:'V',plain:'V — tensione',kind:'volt'},{key:'i',sym:'i',plain:'i — corrente',kind:'current',def:'mA'},{key:'t',sym:'t',plain:'t — tempo',kind:'time',def:'s'}],
+          targets:{ W:{tex:'W = V\\,i\\,t',fn:v=>v.V*v.i*v.t}, V:{tex:'V = \\dfrac{W}{i\\,t}',fn:v=>v.W/(v.i*v.t)}, i:{tex:'i = \\dfrac{W}{V\\,t}',fn:v=>v.W/(v.V*v.t)}, t:{tex:'t = \\dfrac{W}{V\\,i}',fn:v=>v.W/(v.V*v.i)} } },
+        { label:'W = R·i²·t', general:'W = R\\,i^2\\,t',
+          vars:[{key:'W',sym:'W',plain:'W — energia',kind:'energy'},{key:'R',sym:'R',plain:'R — resistenza',kind:'res'},{key:'i',sym:'i',plain:'i — corrente',kind:'current',def:'mA'},{key:'t',sym:'t',plain:'t — tempo',kind:'time',def:'s'}],
+          targets:{ W:{tex:'W = R\\,i^2 t',fn:v=>v.R*v.i*v.i*v.t}, R:{tex:'R = \\dfrac{W}{i^2 t}',fn:v=>v.W/(v.i*v.i*v.t)}, i:{tex:'i = \\sqrt{\\dfrac{W}{R\\,t}}',fn:v=>Math.sqrt(v.W/(v.R*v.t))}, t:{tex:'t = \\dfrac{W}{R\\,i^2}',fn:v=>v.W/(v.R*v.i*v.i)} } }
+      ] }
   ];
 
   function makeSolver(spec){
