@@ -4,22 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Campo elettrico e corrente continua</title>
-<meta name="description" content="Web app didattica interattiva su campo elettrico e corrente elettrica continua per il liceo scientifico.">
+<meta name="description" content="Percorso didattico interattivo su campo elettrico e corrente elettrica continua per il liceo scientifico, organizzato in moduli.">
 
 <!-- MathJax (unica dipendenza esterna, via CDN) -->
 <script>
 window.MathJax = {
-  tex: {
-    inlineMath: [['\\(', '\\)']],
-    displayMath: [['\\[', '\\]']],
-    processEscapes: true
-  },
-  chtml: { scale: 1.0 },
-  startup: {
-    ready: function () {
-      MathJax.startup.defaultReady();
-    }
-  }
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']], processEscapes: true },
+  chtml: { scale: 1.0 }
 };
 </script>
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -29,560 +20,253 @@ window.MathJax = {
    VARIABILI TEMA — palette blu/ambra (accessibile daltonismo)
    ============================================================ */
 :root {
-  --bg:        #f4f1e9;   /* carta */
-  --bg-2:      #ece7db;
-  --surface:   #ffffff;
-  --surface-2: #faf8f2;
-  --text:      #1b202a;   /* inchiostro */
-  --muted:     #5c6675;
-  --border:    #d8d1c2;
-  --border-2:  #c7bfad;
-
-  --accent:    #1f6feb;   /* blu primario */
-  --accent-2:  #1657c0;
-  --accent-soft: rgba(31,111,235,0.12);
-
-  --pos:       #d9822b;   /* carica positiva — ambra */
-  --pos-soft:  rgba(217,130,43,0.15);
-  --neg:       #2565c7;   /* carica negativa — blu */
-  --neg-soft:  rgba(37,101,199,0.15);
-
-  --e-color:   #d9822b;   /* campo E — ambra */
-  --v-color:   #7a4bd6;   /* potenziale V — viola (distinto, non rosso/verde) */
-  --i-color:   #1f6feb;   /* corrente I — blu */
-
-  --ok:        #0f7d57;   /* verde-acqua (usato solo con icona/testo, non con rosso) */
-  --warn:      #b5651d;
-  --err:       #b23a48;   /* usato con testo esplicito, mai come unica codifica */
-
-  --shadow:    0 2px 10px rgba(20,25,35,0.08), 0 1px 3px rgba(20,25,35,0.06);
-  --radius:    14px;
-  --maxw:      1080px;
-
-  --canvas-grid: rgba(90,102,114,0.12);
-  --field-line: #d9822b;
-  --wire:       #7a8494;
-  --electron:   #1f6feb;
+  --bg:#f4f1e9; --bg-2:#ece7db; --surface:#ffffff; --surface-2:#faf8f2;
+  --text:#1b202a; --muted:#5c6675; --border:#d8d1c2; --border-2:#c7bfad;
+  --accent:#1f6feb; --accent-2:#1657c0; --accent-soft:rgba(31,111,235,0.12);
+  --pos:#d9822b; --pos-soft:rgba(217,130,43,0.15);
+  --neg:#2565c7; --neg-soft:rgba(37,101,199,0.15);
+  --e-color:#d9822b; --v-color:#7a4bd6; --i-color:#1f6feb;
+  --ok:#0f7d57; --warn:#b5651d; --err:#b23a48;
+  --shadow:0 2px 10px rgba(20,25,35,0.08), 0 1px 3px rgba(20,25,35,0.06);
+  --radius:14px; --maxw:1080px;
+  --canvas-grid:rgba(90,102,114,0.12);
+  --field-line:#d9822b; --wire:#7a8494; --electron:#1f6feb;
 }
-
 html[data-theme="dark"] {
-  --bg:        #10141b;
-  --bg-2:      #161b24;
-  --surface:   #1a2029;
-  --surface-2: #212836;
-  --text:      #e7ebf2;
-  --muted:     #97a2b2;
-  --border:    #2c3442;
-  --border-2:  #3a4454;
-
-  --accent:    #58a6ff;
-  --accent-2:  #79b8ff;
-  --accent-soft: rgba(88,166,255,0.16);
-
-  --pos:       #e0a35c;   /* ambra desaturata */
-  --pos-soft:  rgba(224,163,92,0.18);
-  --neg:       #6aa6e8;   /* blu desaturato */
-  --neg-soft:  rgba(106,166,232,0.18);
-
-  --e-color:   #e0a35c;
-  --v-color:   #b79bec;
-  --i-color:   #58a6ff;
-
-  --ok:        #4fbf95;
-  --warn:      #d6a45c;
-  --err:       #e77b86;
-
-  --shadow:    0 2px 14px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.4);
-
-  --canvas-grid: rgba(151,162,178,0.13);
-  --field-line: #e0a35c;
-  --wire:       #59647a;
-  --electron:   #58a6ff;
+  --bg:#10141b; --bg-2:#161b24; --surface:#1a2029; --surface-2:#212836;
+  --text:#e7ebf2; --muted:#97a2b2; --border:#2c3442; --border-2:#3a4454;
+  --accent:#58a6ff; --accent-2:#79b8ff; --accent-soft:rgba(88,166,255,0.16);
+  --pos:#e0a35c; --pos-soft:rgba(224,163,92,0.18);
+  --neg:#6aa6e8; --neg-soft:rgba(106,166,232,0.18);
+  --e-color:#e0a35c; --v-color:#b79bec; --i-color:#58a6ff;
+  --ok:#4fbf95; --warn:#d6a45c; --err:#e77b86;
+  --shadow:0 2px 14px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.4);
+  --canvas-grid:rgba(151,162,178,0.13);
+  --field-line:#e0a35c; --wire:#59647a; --electron:#58a6ff;
 }
-
-* { box-sizing: border-box; }
-
-html { scroll-behavior: smooth; }
-
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.65;
-  font-size: 17px;
-  transition: background-color .55s ease, color .55s ease;
-  -webkit-font-smoothing: antialiased;
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:var(--bg); color:var(--text); line-height:1.65; font-size:17px;
+  transition:background-color .55s ease, color .55s ease;
+  -webkit-font-smoothing:antialiased;
+}
+.surface,.card,header.topbar,.nav-btn,.btn,input,select,.exercise,.quiz-q,
+.meter,.callout,.theory-block,.sim-panel,.controls,.subtab,.module-head {
+  transition:background-color .55s ease, color .55s ease, border-color .55s ease,
+             box-shadow .35s ease, transform .18s ease;
 }
 
-/* Transizione fluida globale su superfici e bordi */
-.surface, .card, header.topbar, .nav-btn, .btn, input, select,
-.exercise, .quiz-q, .meter, .callout, .theory-block, .sim-panel, .controls {
-  transition: background-color .55s ease, color .55s ease,
-              border-color .55s ease, box-shadow .35s ease,
-              transform .18s ease;
-}
-
-/* ============================================================
-   HEADER + NAV
-   ============================================================ */
+/* ---------- HEADER + NAV PRINCIPALE ---------- */
 header.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  backdrop-filter: saturate(1.1) blur(8px);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow);
+  position:sticky; top:0; z-index:50;
+  background:color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter:saturate(1.1) blur(8px);
+  border-bottom:1px solid var(--border); box-shadow:var(--shadow);
 }
-.topbar-inner {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 10px 18px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-.brand {
-  font-weight: 700;
-  font-size: 1.02rem;
-  letter-spacing: .2px;
-  margin-right: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.brand .spark {
-  width: 26px; height: 26px; flex: 0 0 auto;
-}
-nav.tabs {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.nav-btn {
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--muted);
-  padding: 7px 13px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-size: .92rem;
-  font-weight: 600;
-  font-family: inherit;
-}
-.nav-btn:hover { color: var(--text); background: var(--accent-soft); }
-.nav-btn.active {
-  color: var(--accent);
-  background: var(--accent-soft);
-  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
-}
+.topbar-inner { max-width:var(--maxw); margin:0 auto; padding:10px 18px;
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.brand { font-weight:700; font-size:1.02rem; letter-spacing:.2px; margin-right:auto;
+  display:flex; align-items:center; gap:10px; }
+.brand .spark { width:26px; height:26px; flex:0 0 auto; }
+nav.tabs { display:flex; gap:6px; flex-wrap:wrap; }
+.nav-btn { border:1px solid transparent; background:transparent; color:var(--muted);
+  padding:7px 13px; border-radius:999px; cursor:pointer; font-size:.9rem; font-weight:600;
+  font-family:inherit; }
+.nav-btn:hover { color:var(--text); background:var(--accent-soft); }
+.nav-btn.active { color:var(--accent); background:var(--accent-soft);
+  border-color:color-mix(in srgb, var(--accent) 35%, transparent); }
 
-/* Toggle giorno/notte */
-.theme-toggle {
-  border: 1px solid var(--border-2);
-  background: var(--surface-2);
-  color: var(--text);
-  width: 52px; height: 30px;
-  border-radius: 999px;
-  cursor: pointer;
-  position: relative;
-  padding: 0;
-  flex: 0 0 auto;
-}
-.theme-toggle .knob {
-  position: absolute;
-  top: 2px; left: 2px;
-  width: 24px; height: 24px;
-  border-radius: 50%;
-  background: var(--accent);
-  transition: transform .45s cubic-bezier(.34,1.4,.5,1), background-color .45s ease;
-  display: grid; place-items: center;
-  color: #fff; font-size: 13px;
-}
-html[data-theme="dark"] .theme-toggle .knob {
-  transform: translateX(22px);
-  background: var(--pos);
-}
+.theme-toggle { border:1px solid var(--border-2); background:var(--surface-2); color:var(--text);
+  width:52px; height:30px; border-radius:999px; cursor:pointer; position:relative; padding:0; flex:0 0 auto; }
+.theme-toggle .knob { position:absolute; top:2px; left:2px; width:24px; height:24px; border-radius:50%;
+  background:var(--accent); transition:transform .45s cubic-bezier(.34,1.4,.5,1), background-color .45s ease;
+  display:grid; place-items:center; color:#fff; font-size:13px; }
+html[data-theme="dark"] .theme-toggle .knob { transform:translateX(22px); background:var(--pos); }
 
-/* ============================================================
-   LAYOUT
-   ============================================================ */
-main {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 26px 18px 90px;
-}
-.section { display: none; animation: fade .45s ease; }
-.section.active { display: block; }
-@keyframes fade {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* ---------- LAYOUT ---------- */
+main { max-width:var(--maxw); margin:0 auto; padding:24px 18px 90px; }
+.module { display:none; animation:fade .45s ease; }
+.module.active { display:block; }
+@keyframes fade { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
 
-h1 { font-size: 1.85rem; line-height: 1.2; margin: .2em 0 .3em; }
-h2 {
-  font-size: 1.35rem; margin: 1.8em 0 .5em;
-  padding-bottom: .25em;
-  border-bottom: 2px solid var(--accent-soft);
-}
-h3 { font-size: 1.12rem; margin: 1.3em 0 .4em; color: var(--accent-2); }
-p { margin: .6em 0; }
-.lead { font-size: 1.05rem; color: var(--muted); max-width: 70ch; }
+.module-head { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:18px 22px; box-shadow:var(--shadow); margin-bottom:6px; border-left:5px solid var(--accent); }
+.module-head .m-kicker { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:1px;
+  color:var(--accent); }
+.module-head h1 { font-size:1.55rem; line-height:1.2; margin:.15em 0 .2em; }
+.module-head .lead { color:var(--muted); margin:0; max-width:72ch; }
 
-.card, .theory-block {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 22px;
-  margin: 18px 0;
-  box-shadow: var(--shadow);
-}
+/* ---------- SOTTO-NAV MODULO ---------- */
+.subnav { display:flex; gap:8px; flex-wrap:wrap; margin:16px 0 18px; position:sticky; top:52px; z-index:20;
+  background:color-mix(in srgb, var(--bg) 88%, transparent); padding:6px 0; backdrop-filter:blur(4px); }
+.subtab { border:1px solid var(--border-2); background:var(--surface-2); color:var(--muted);
+  padding:9px 16px; border-radius:10px; cursor:pointer; font-weight:600; font-size:.9rem; font-family:inherit; }
+.subtab:hover { color:var(--text); border-color:var(--accent); }
+.subtab.active { background:var(--accent-soft); color:var(--accent);
+  border-color:color-mix(in srgb, var(--accent) 40%, transparent); }
+.pane { display:none; animation:fade .4s ease; }
+.pane.active { display:block; }
 
-/* Analogie / note */
-.callout {
-  border-left: 4px solid var(--accent);
-  background: var(--accent-soft);
-  border-radius: 0 10px 10px 0;
-  padding: 12px 16px;
-  margin: 16px 0;
-  font-size: .98rem;
-}
-.callout.analogy { border-left-color: var(--pos); background: var(--pos-soft); }
-.callout .tag {
-  display: inline-block;
-  font-size: .72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .8px;
-  color: var(--accent);
-  margin-bottom: 2px;
-}
-.callout.analogy .tag { color: var(--pos); }
+h1 { font-size:1.8rem; line-height:1.2; margin:.2em 0 .3em; }
+h2 { font-size:1.3rem; margin:1.6em 0 .5em; padding-bottom:.25em; border-bottom:2px solid var(--accent-soft); }
+h3 { font-size:1.1rem; margin:1.2em 0 .4em; color:var(--accent-2); }
+p { margin:.6em 0; }
+.lead { font-size:1.03rem; color:var(--muted); max-width:72ch; }
 
-.reassure {
-  font-style: italic;
-  color: var(--muted);
-  border-left: 3px solid var(--border-2);
-  padding-left: 12px;
-  margin: 14px 0;
-}
+.card,.theory-block { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:20px 22px; margin:16px 0; box-shadow:var(--shadow); }
 
-/* Formule display centrate */
-.eq {
-  overflow-x: auto;
-  padding: 6px 2px;
-}
+.callout { border-left:4px solid var(--accent); background:var(--accent-soft); border-radius:0 10px 10px 0;
+  padding:12px 16px; margin:16px 0; font-size:.98rem; }
+.callout.analogy { border-left-color:var(--pos); background:var(--pos-soft); }
+.callout.history { border-left-color:var(--v-color); background:color-mix(in srgb, var(--v-color) 12%, transparent); }
+.callout .tag { display:inline-block; font-size:.72rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:.8px; color:var(--accent); margin-bottom:2px; }
+.callout.analogy .tag { color:var(--pos); }
+.callout.history .tag { color:var(--v-color); }
+.reassure { font-style:italic; color:var(--muted); border-left:3px solid var(--border-2);
+  padding-left:12px; margin:14px 0; }
+.eq { overflow-x:auto; padding:6px 2px; }
 
-/* Griglia legenda simboli */
-.symbol-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 10px;
-  margin: 14px 0;
-}
-.symbol-grid .sym {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: .9rem;
-}
-.symbol-grid .sym b { color: var(--accent-2); }
+.table-wrap { overflow-x:auto; }
+table.data { width:100%; border-collapse:collapse; margin:12px 0; font-size:.92rem; }
+table.data th, table.data td { border:1px solid var(--border); padding:8px 10px; text-align:left; }
+table.data th { background:var(--surface-2); }
 
-/* ============================================================
-   SIMULAZIONI
-   ============================================================ */
-.sim-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin: 18px 0;
-  box-shadow: var(--shadow);
-}
-.sim-canvas-wrap {
-  position: relative;
-  width: 100%;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  touch-action: none;
-}
-canvas { display: block; width: 100%; height: auto; }
+/* ---------- SIMULAZIONI ---------- */
+.sim-panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:16px; margin:16px 0; box-shadow:var(--shadow); }
+.sim-panel h3 { margin-top:.2em; }
+.sim-canvas-wrap { position:relative; width:100%; border-radius:12px; overflow:hidden;
+  border:1px solid var(--border); background:var(--surface-2); touch-action:none; }
+canvas { display:block; width:100%; height:auto; }
 
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 14px;
-  align-items: center;
-  margin-top: 14px;
-}
-.control {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 150px;
-  flex: 1 1 150px;
-}
-.control label {
-  font-size: .8rem;
-  font-weight: 600;
-  color: var(--muted);
-  display: flex; justify-content: space-between; gap: 8px;
-}
-.control label .val { color: var(--accent); font-variant-numeric: tabular-nums; }
+.controls { display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center; margin-top:14px; }
+.control { display:flex; flex-direction:column; gap:4px; min-width:150px; flex:1 1 150px; }
+.control label { font-size:.8rem; font-weight:600; color:var(--muted); display:flex; justify-content:space-between; gap:8px; }
+.control label .val { color:var(--accent); font-variant-numeric:tabular-nums; }
+input[type="range"] { -webkit-appearance:none; appearance:none; width:100%; height:6px;
+  background:var(--border); border-radius:999px; outline:none; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:18px; height:18px;
+  border-radius:50%; background:var(--accent); cursor:pointer; border:2px solid var(--surface); box-shadow:0 1px 3px rgba(0,0,0,.3); }
+input[type="range"]::-moz-range-thumb { width:18px; height:18px; border-radius:50%; background:var(--accent);
+  cursor:pointer; border:2px solid var(--surface); }
 
-input[type="range"] {
-  -webkit-appearance: none; appearance: none;
-  width: 100%; height: 6px;
-  background: var(--border);
-  border-radius: 999px;
-  outline: none;
-}
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none; appearance: none;
-  width: 18px; height: 18px; border-radius: 50%;
-  background: var(--accent);
-  cursor: pointer; border: 2px solid var(--surface);
-  box-shadow: 0 1px 3px rgba(0,0,0,.3);
-}
-input[type="range"]::-moz-range-thumb {
-  width: 18px; height: 18px; border-radius: 50%;
-  background: var(--accent);
-  cursor: pointer; border: 2px solid var(--surface);
-}
+.btn { border:1px solid var(--border-2); background:var(--surface-2); color:var(--text); padding:8px 14px;
+  border-radius:10px; cursor:pointer; font-size:.9rem; font-weight:600; font-family:inherit; }
+.btn:hover { border-color:var(--accent); color:var(--accent); }
+.btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+.btn.primary:hover { background:var(--accent-2); color:#fff; }
+.btn.pos { border-color:var(--pos); color:var(--pos); }
+.btn.pos:hover { background:var(--pos-soft); }
+.btn.neg { border-color:var(--neg); color:var(--neg); }
+.btn.neg:hover { background:var(--neg-soft); }
+.btn[disabled] { opacity:.4; cursor:not-allowed; }
+.btn-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.toggle-row { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-top:6px; }
+.chk { display:inline-flex; align-items:center; gap:6px; font-size:.88rem; color:var(--muted); cursor:pointer; }
+.chk input { accent-color:var(--accent); width:16px; height:16px; }
 
-.btn {
-  border: 1px solid var(--border-2);
-  background: var(--surface-2);
-  color: var(--text);
-  padding: 8px 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: .9rem;
-  font-weight: 600;
-  font-family: inherit;
-}
-.btn:hover { border-color: var(--accent); color: var(--accent); }
-.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-.btn.primary:hover { background: var(--accent-2); color:#fff; }
-.btn.pos { border-color: var(--pos); color: var(--pos); }
-.btn.pos:hover { background: var(--pos-soft); }
-.btn.neg { border-color: var(--neg); color: var(--neg); }
-.btn.neg:hover { background: var(--neg-soft); }
-.btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.meters { display:flex; gap:12px; flex-wrap:wrap; margin-top:14px; }
+.meter { flex:1 1 130px; background:var(--surface-2); border:1px solid var(--border); border-radius:12px;
+  padding:12px 14px; text-align:center; }
+.meter .m-label { font-size:.75rem; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); }
+.meter .m-val { font-size:1.4rem; font-weight:700; font-variant-numeric:tabular-nums; margin:2px 0; }
+.meter .m-unit { font-size:.8rem; color:var(--muted); }
+.meter.i .m-val { color:var(--i-color); }
+.meter.v .m-val { color:var(--v-color); }
+.meter.p .m-val { color:var(--pos); }
+.meter.r .m-val { color:var(--accent); }
+.meter.e .m-val { color:var(--e-color); }
 
-.toggle-row { display: flex; gap: 14px; flex-wrap: wrap; align-items:center; margin-top:6px; }
-.chk { display: inline-flex; align-items: center; gap: 6px; font-size: .88rem; color: var(--muted); cursor: pointer; }
-.chk input { accent-color: var(--accent); width: 16px; height: 16px; }
+/* ---------- ESERCIZI ---------- */
+.exercise { background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--accent);
+  border-radius:var(--radius); padding:18px 20px; margin:16px 0; box-shadow:var(--shadow); }
+.ex-head { display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; }
+.ex-diff { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; padding:3px 9px; border-radius:999px; }
+.ex-diff.base { background:var(--neg-soft); color:var(--neg); }
+.ex-diff.medio { background:var(--accent-soft); color:var(--accent); }
+.ex-diff.avanz { background:var(--pos-soft); color:var(--pos); }
+.hint { background:var(--surface-2); border:1px dashed var(--border-2); border-radius:10px; padding:10px 14px;
+  margin:8px 0; font-size:.95rem; animation:fade .35s ease; }
+.hint .h-tag { font-weight:700; color:var(--accent); font-size:.8rem; }
+.answer-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+input[type="text"],input[type="number"],select { background:var(--surface-2); border:1px solid var(--border-2);
+  color:var(--text); border-radius:10px; padding:9px 12px; font-size:.95rem; font-family:inherit; }
+input[type="number"] { width:150px; }
+input:focus, select:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+.feedback { margin-top:10px; font-size:.95rem; border-radius:10px; padding:10px 14px; display:none; }
+.feedback.show { display:block; animation:fade .3s ease; }
+.feedback.correct { background:color-mix(in srgb, var(--ok) 14%, transparent); border:1px solid var(--ok); color:var(--ok); }
+.feedback.wrong { background:color-mix(in srgb, var(--warn) 14%, transparent); border:1px solid var(--warn); color:var(--text); }
 
-/* Strumenti virtuali (amperometro / voltmetro) */
-.meters { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
-.meter {
-  flex: 1 1 140px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 14px;
-  text-align: center;
-}
-.meter .m-label { font-size: .78rem; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
-.meter .m-val {
-  font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums;
-  margin: 2px 0;
-}
-.meter .m-unit { font-size: .85rem; color: var(--muted); }
-.meter.i .m-val { color: var(--i-color); }
-.meter.v .m-val { color: var(--v-color); }
-.meter.p .m-val { color: var(--pos); }
-.meter.r .m-val { color: var(--accent); }
+/* ---------- QUIZ ---------- */
+.run-score { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:11px 16px; margin:0 0 16px;
+  box-shadow:var(--shadow); font-weight:600; }
+.run-score .rs-num { color:var(--accent); font-variant-numeric:tabular-nums; }
+.run-score .rs-sub { font-size:.85rem; color:var(--muted); font-weight:500; }
+.pane-intro { color:var(--muted); font-size:.98rem; margin:0 0 14px; }
+.quiz-q { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px;
+  margin:16px 0; box-shadow:var(--shadow); }
+.quiz-q.qhidden { display:none; }
+.q-num { font-size:.78rem; color:var(--muted); font-weight:700; letter-spacing:.5px; }
+.q-cat { display:inline-block; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px;
+  padding:2px 9px; border-radius:999px; margin-right:8px; }
+.q-cat.t { background:var(--accent-soft); color:var(--accent); }
+.q-cat.p { background:var(--pos-soft); color:var(--pos); }
+.opt { display:block; border:1px solid var(--border); border-radius:10px; padding:10px 14px; margin:8px 0;
+  cursor:pointer; background:var(--surface-2); font-size:.96rem; }
+.opt:hover { border-color:var(--accent); }
+.opt.sel { border-color:var(--accent); background:var(--accent-soft); }
+.opt.correct { border-color:var(--ok); background:color-mix(in srgb, var(--ok) 12%, transparent); }
+.opt.wrong { border-color:var(--warn); background:color-mix(in srgb, var(--warn) 12%, transparent); }
+.opt.locked { pointer-events:none; opacity:.95; }
+.q-explain { margin-top:10px; font-size:.93rem; background:var(--surface-2); border-left:3px solid var(--accent);
+  border-radius:0 8px 8px 0; padding:10px 14px; display:none; }
+.q-explain.show { display:block; animation:fade .3s ease; }
+.quiz-nav { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:18px; flex-wrap:wrap; }
+.quiz-nav .q-indicator { font-weight:600; color:var(--muted); font-variant-numeric:tabular-nums; flex:1 1 auto; text-align:center; min-width:120px; }
+.quiz-summary { text-align:center; padding:22px; border-radius:var(--radius); background:var(--surface);
+  border:1px solid var(--border); box-shadow:var(--shadow); margin-top:18px; display:none; }
+.quiz-summary.show { display:block; }
+.quiz-summary .score { font-size:2.2rem; font-weight:800; color:var(--accent); }
 
-/* ============================================================
-   ESERCIZI
-   ============================================================ */
-.exercise {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--accent);
-  border-radius: var(--radius);
-  padding: 18px 20px;
-  margin: 18px 0;
-  box-shadow: var(--shadow);
-}
-.ex-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-.ex-diff { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; padding: 3px 9px; border-radius: 999px; }
-.ex-diff.base { background: var(--neg-soft); color: var(--neg); }
-.ex-diff.medio { background: var(--accent-soft); color: var(--accent); }
-.ex-diff.avanz { background: var(--pos-soft); color: var(--pos); }
-
-.hint-box {
-  margin: 10px 0 0;
-  padding: 0;
-}
-.hint {
-  background: var(--surface-2);
-  border: 1px dashed var(--border-2);
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin: 8px 0;
-  font-size: .95rem;
-  animation: fade .35s ease;
-}
-.hint .h-tag { font-weight: 700; color: var(--accent); font-size: .8rem; }
-
-.answer-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
-input[type="text"], input[type="number"], select {
-  background: var(--surface-2);
-  border: 1px solid var(--border-2);
-  color: var(--text);
-  border-radius: 10px;
-  padding: 9px 12px;
-  font-size: .95rem;
-  font-family: inherit;
-}
-input[type="number"] { width: 150px; }
-input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
-
-.feedback { margin-top: 10px; font-size: .95rem; border-radius: 10px; padding: 10px 14px; display: none; }
-.feedback.show { display: block; animation: fade .3s ease; }
-.feedback.correct { background: color-mix(in srgb, var(--ok) 14%, transparent); border: 1px solid var(--ok); color: var(--ok); }
-.feedback.wrong  { background: color-mix(in srgb, var(--warn) 14%, transparent); border: 1px solid var(--warn); color: var(--text); }
-.feedback b { color: inherit; }
-
-/* ============================================================
-   QUIZ
-   ============================================================ */
-.quiz-q {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px 20px;
-  margin: 16px 0;
-  box-shadow: var(--shadow);
-}
-.quiz-q .q-num { font-size: .78rem; color: var(--muted); font-weight: 700; letter-spacing: .5px; }
-.opt {
-  display: block;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin: 8px 0;
-  cursor: pointer;
-  background: var(--surface-2);
-  font-size: .96rem;
-}
-.opt:hover { border-color: var(--accent); }
-.opt input { margin-right: 8px; accent-color: var(--accent); }
-.opt.correct { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); }
-.opt.wrong { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, transparent); }
-.opt.locked { pointer-events: none; opacity: .95; }
-
-.q-explain {
-  margin-top: 10px; font-size: .93rem;
-  background: var(--surface-2); border-left: 3px solid var(--accent);
-  border-radius: 0 8px 8px 0; padding: 10px 14px; display: none;
-}
-.q-explain.show { display: block; animation: fade .3s ease; }
-
-.quiz-summary {
-  text-align: center;
-  padding: 22px;
-  border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  margin-top: 18px;
-  display: none;
-}
-.quiz-summary.show { display: block; }
-.quiz-summary .score { font-size: 2.4rem; font-weight: 800; color: var(--accent); }
-.progress-bar {
-  height: 10px; background: var(--border); border-radius: 999px; overflow: hidden; margin: 14px 0;
-}
-.progress-bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--pos)); width: 0; transition: width .5s ease; }
-
-/* Sotto-navigazione dei quiz */
-.quiz-subnav { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 20px; }
-.subtab {
-  border: 1px solid var(--border-2); background: var(--surface-2); color: var(--muted);
-  padding: 9px 15px; border-radius: 10px; cursor: pointer;
-  font-weight: 600; font-size: .9rem; font-family: inherit;
-}
-.subtab:hover { color: var(--text); border-color: var(--accent); }
-.subtab.active {
-  background: var(--accent-soft); color: var(--accent);
-  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
-}
-.quiz-pane { display: none; animation: fade .4s ease; }
-.quiz-pane.active { display: block; }
-.quiz-pane .pane-intro { color: var(--muted); font-size: .98rem; margin: 0 0 14px; }
-.run-score {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; flex-wrap: wrap;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-  padding: 11px 16px; margin: 0 0 16px; box-shadow: var(--shadow); font-weight: 600;
-}
-.run-score .rs-main { font-size: 1.02rem; }
-.run-score .rs-num { color: var(--accent); font-variant-numeric: tabular-nums; }
-.run-score .rs-sub { font-size: .85rem; color: var(--muted); font-weight: 500; }
-.quiz-block-title {
-  font-size: 1.06rem; margin: 24px 0 8px; color: var(--accent-2);
-  display: flex; align-items: center; gap: 8px;
-}
-.quiz-block-title::before {
-  content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: 0 0 auto;
-}
-.opt.sel { border-color: var(--accent); background: var(--accent-soft); }
-
-/* Quiz: una domanda alla volta */
-.quiz-q.qhidden { display: none; }
-.q-cat {
-  display: inline-block; font-size: .68rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .6px;
-  padding: 2px 9px; border-radius: 999px; margin-right: 8px;
-}
-.q-cat.t { background: var(--accent-soft); color: var(--accent); }
-.q-cat.p { background: var(--pos-soft); color: var(--pos); }
-.quiz-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; margin-top: 18px; flex-wrap: wrap;
-}
-.quiz-nav .q-indicator {
-  font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums;
-  flex: 1 1 auto; text-align: center; min-width: 120px;
-}
-.btn[disabled] { opacity: .4; cursor: not-allowed; }
-.btn[disabled]:hover { border-color: var(--border-2); color: var(--text); background: var(--surface-2); }
-
-/* Diagrammi SVG */
-.diagram { width: 100%; height: auto; display: block; margin: 10px auto; max-width: 520px; }
-.svg-cap { text-align: center; font-size: .84rem; color: var(--muted); margin-top: 4px; }
-
-/* Tabelle */
-table.data { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: .92rem; }
-table.data th, table.data td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; }
-table.data th { background: var(--surface-2); }
-.table-wrap { overflow-x: auto; }
-
-.footer-note { text-align: center; color: var(--muted); font-size: .82rem; margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border); }
-
-.section-intro { margin-bottom: 10px; }
-
-/* Responsive */
-@media (max-width: 640px) {
-  body { font-size: 16px; }
-  h1 { font-size: 1.5rem; }
-  .topbar-inner { padding: 8px 12px; gap: 8px; }
-  .brand { font-size: .92rem; width: 100%; }
-  nav.tabs { order: 3; width: 100%; }
-  .nav-btn { flex: 1 1 auto; text-align: center; padding: 7px 8px; font-size: .82rem; }
-  main { padding: 18px 12px 80px; }
-  .card, .theory-block, .exercise, .quiz-q, .sim-panel { padding: 15px; }
-}
+/* ---------- INTRO / SVG ---------- */
+.hero { background:linear-gradient(135deg, var(--accent-soft), var(--pos-soft));
+  border:1px solid var(--border); border-radius:var(--radius); padding:26px 24px; box-shadow:var(--shadow); }
+.hero h1 { margin-top:0; }
+.timeline { list-style:none; padding:0; margin:14px 0; }
+.timeline li { display:grid; grid-template-columns:96px 1fr; gap:12px; padding:9px 0; border-bottom:1px solid var(--border); align-items:baseline; }
+.timeline li:last-child { border-bottom:none; }
+.timeline .year { font-weight:800; color:var(--accent); font-variant-numeric:tabular-nums; }
+.timeline .who { font-weight:700; }
+.module-cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:12px; margin:16px 0; }
+.mod-card { background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:14px 16px;
+  cursor:pointer; }
+.mod-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+.mod-card .mc-n { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--accent); }
+.mod-card h3 { margin:.2em 0 .3em; font-size:1.02rem; color:var(--text); }
+.mod-card p { margin:0; font-size:.88rem; color:var(--muted); }
+.diagram { width:100%; height:auto; display:block; margin:10px auto; max-width:520px; }
+.svg-cap { text-align:center; font-size:.84rem; color:var(--muted); margin-top:4px; }
+.footer-note { text-align:center; color:var(--muted); font-size:.82rem; margin-top:40px; padding-top:18px; border-top:1px solid var(--border); }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+
+@media (max-width:640px) {
+  body { font-size:16px; }
+  .topbar-inner { padding:8px 12px; gap:8px; }
+  .brand { font-size:.9rem; width:100%; }
+  nav.tabs { order:3; width:100%; }
+  .nav-btn { flex:1 1 auto; text-align:center; padding:7px 8px; font-size:.8rem; }
+  main { padding:16px 12px 80px; }
+  .card,.theory-block,.exercise,.quiz-q,.sim-panel,.module-head { padding:15px; }
+  .subnav { top:0; }
+  .timeline li { grid-template-columns:70px 1fr; }
+}
 </style>
 </head>
 <body>
@@ -596,11 +280,12 @@ table.data th { background: var(--surface-2); }
       </svg>
       Campo elettrico &amp; corrente continua
     </div>
-    <nav class="tabs" aria-label="Sezioni">
-      <button class="nav-btn active" data-target="teoria">Teoria</button>
-      <button class="nav-btn" data-target="simulazioni">Simulazioni</button>
-      <button class="nav-btn" data-target="esercizi">Esercizi</button>
-      <button class="nav-btn" data-target="quiz">Quiz</button>
+    <nav class="tabs" aria-label="Moduli">
+      <button class="nav-btn active" data-mod="intro">Introduzione</button>
+      <button class="nav-btn" data-mod="mod1">1 · Coulomb e campo</button>
+      <button class="nav-btn" data-mod="mod2">2 · Potenziale e Gauss</button>
+      <button class="nav-btn" data-mod="mod3">3 · Corrente e Ohm</button>
+      <button class="nav-btn" data-mod="mod4">4 · Circuiti</button>
     </nav>
     <button class="theme-toggle" id="themeToggle" aria-label="Cambia tema chiaro/scuro" title="Modalità giorno/notte">
       <span class="knob" id="knob">☾</span>
@@ -611,1520 +296,1099 @@ table.data th { background: var(--surface-2); }
 <main>
 
 <!-- ============================================================
-     SEZIONE 1 — TEORIA
+     SCHEDA INTRODUTTIVA
      ============================================================ -->
-<section id="teoria" class="section active">
-  <h1>Teoria</h1>
-  <p class="lead">Percorso completo dal campo elettrico ai circuiti in corrente continua. Le formule sono ricavate passo per passo; dove un concetto è astratto, un'analogia con qualcosa di familiare aiuta a costruire l'intuizione.</p>
-
-  <div class="callout">
-    <span class="tag">Come leggere questa sezione</span>
-    <p style="margin:.3em 0 0">Ogni grandezza compare sempre con la sua unità di misura nel SI. Le formule in riquadro sono quelle da ricordare; il testo attorno spiega <em>perché</em> hanno quella forma, così non devi impararle a memoria senza senso.</p>
+<section id="intro" class="module active">
+  <div class="hero">
+    <h1>Campo elettrico e corrente elettrica continua</h1>
+    <p class="lead" style="color:var(--text)">Un percorso per l'ultimo anno di liceo scientifico che collega due grandi capitoli dell'elettromagnetismo: come le cariche a riposo generano un <strong>campo</strong> nello spazio, e come le cariche in moto danno origine alla <strong>corrente</strong> nei circuiti. Ogni idea è accompagnata da simulazioni con cui giocare, esercizi guidati e quiz.</p>
   </div>
 
-  <!-- ---------- 1.1 Legge di Coulomb ---------- -->
-  <h2>1. La legge di Coulomb</h2>
-  <div class="theory-block">
-    <p>Due cariche puntiformi \(q_1\) e \(q_2\) a distanza \(r\) si esercitano una forza diretta lungo la retta che le congiunge. La sua intensità è:</p>
-    <div class="eq">\[ F = k \, \frac{|q_1\, q_2|}{r^2}, \qquad k = \frac{1}{4\pi\varepsilon_0} \approx 8{,}99\times 10^{9}\ \mathrm{N\,m^2/C^2} \]</div>
-    <p>dove \(\varepsilon_0 \approx 8{,}85\times10^{-12}\ \mathrm{F/m}\) è la costante dielettrica del vuoto. La forza è <strong>repulsiva</strong> se le cariche hanno lo stesso segno, <strong>attrattiva</strong> se hanno segno opposto.</p>
-
-    <div class="callout analogy">
-      <span class="tag">Analogia — gravitazione</span>
-      <p style="margin:.3em 0 0">Confronta con la gravitazione universale: \(F = G\,\dfrac{m_1 m_2}{r^2}\). Stessa struttura: prodotto delle "sorgenti" diviso la distanza al quadrato. La differenza fondamentale è che la massa è sempre positiva (la gravità solo attira), mentre la carica ha due segni: l'elettricità può <em>attirare e respingere</em>. E la costante \(k\) è enormemente più grande di \(G\): l'interazione elettrica è di gran lunga più intensa di quella gravitazionale.</p>
+  <div class="card">
+    <h2>Come è organizzato il lavoro</h2>
+    <p>Il percorso è diviso in quattro moduli. Ciascun modulo è autosufficiente e contiene, nelle sue sotto-schede, la <strong>Teoria</strong>, le <strong>Simulazioni</strong> interattive, gli <strong>Esercizi</strong> guidati e un <strong>Quiz</strong> di verifica, tutti riferiti allo stesso argomento. Puoi seguirli in ordine oppure saltare al modulo che ti interessa.</p>
+    <div class="module-cards">
+      <div class="mod-card" data-goto="mod1">
+        <div class="mc-n">Modulo 1</div><h3>Legge di Coulomb e campo elettrico</h3>
+        <p>Forza tra cariche, campo E, principio di sovrapposizione, linee di campo.</p>
+      </div>
+      <div class="mod-card" data-goto="mod2">
+        <div class="mc-n">Modulo 2</div><h3>Potenziale e teorema di Gauss</h3>
+        <p>Energia potenziale, potenziale V, flusso del campo, casi simmetrici.</p>
+      </div>
+      <div class="mod-card" data-goto="mod3">
+        <div class="mc-n">Modulo 3</div><h3>Corrente e leggi di Ohm</h3>
+        <p>Intensità e densità di corrente, resistenza, resistività, effetto Joule.</p>
+      </div>
+      <div class="mod-card" data-goto="mod4">
+        <div class="mc-n">Modulo 4</div><h3>Circuiti in corrente continua</h3>
+        <p>Serie e parallelo, leggi di Kirchhoff, generatori reali.</p>
+      </div>
     </div>
-
-    <p class="reassure">È normale che l'ordine di grandezza di \(k\) sembri astratto: il senso pratico lo vedrai negli esercizi, quando due cariche di pochi microcoulomb producono forze di parecchi newton.</p>
+    <p style="font-size:.92rem;color:var(--muted);margin-bottom:0">Suggerimento: in alto trovi le schede dei moduli; una volta dentro un modulo, usa le sotto-schede per passare tra teoria, simulazioni, esercizi e quiz. Il pulsante in alto a destra alterna la modalità giorno/notte.</p>
   </div>
 
-  <!-- ---------- 1.2 Campo elettrico ---------- -->
-  <h2>2. Il campo elettrico E</h2>
-  <div class="theory-block">
-    <p>La forza dipende dalla carica di prova che usiamo per misurarla. Per descrivere lo spazio <em>indipendentemente</em> dalla carica di prova, si introduce il <strong>campo elettrico</strong>: la forza per unità di carica.</p>
-    <div class="eq">\[ \vec{E} = \frac{\vec{F}}{q_0}, \qquad [E] = \frac{\mathrm{N}}{\mathrm{C}} = \frac{\mathrm{V}}{\mathrm{m}} \]</div>
-    <p>Il campo generato da una <strong>carica puntiforme</strong> \(Q\) a distanza \(r\) ha intensità:</p>
-    <div class="eq">\[ E = k\,\frac{|Q|}{r^2} \]</div>
-    <p>Il vettore \(\vec E\) punta <em>lontano</em> da una carica positiva e <em>verso</em> una carica negativa.</p>
-
-    <div class="callout analogy">
-      <span class="tag">Analogia — il campo come "predisposizione"</span>
-      <p style="margin:.3em 0 0">Pensa al campo elettrico come alla pendenza di un terreno collinare: esiste in ogni punto anche se nessuna pallina ci sta rotolando sopra. Quando appoggi una pallina (la carica di prova), essa "sente" la pendenza e viene spinta. Il campo \(\vec E\) è la pendenza; la forza \(\vec F = q\vec E\) è la spinta effettiva sulla pallina che hai messo lì.</p>
-    </div>
-  </div>
-
-  <!-- ---------- 1.3 Sovrapposizione + linee ---------- -->
-  <h2>3. Principio di sovrapposizione e linee di campo</h2>
-  <div class="theory-block">
-    <p>Il campo prodotto da più cariche è la <strong>somma vettoriale</strong> dei campi di ciascuna, calcolati come se le altre non ci fossero:</p>
-    <div class="eq">\[ \vec{E}_{\text{tot}} = \vec{E}_1 + \vec{E}_2 + \dots = \sum_i k\,\frac{q_i}{r_i^2}\,\hat{r}_i \]</div>
-    <p>Le <strong>linee di campo</strong> sono curve tangenti in ogni punto al vettore \(\vec E\). Regole di lettura:</p>
-    <ul>
-      <li>Escono dalle cariche positive, entrano nelle negative.</li>
-      <li>Non si incrociano mai (in un punto il campo ha una sola direzione).</li>
-      <li>Dove le linee sono più fitte, il campo è più intenso.</li>
+  <div class="card">
+    <h2>Un po' di storia</h2>
+    <p>Le grandezze che studierai portano i nomi degli scienziati che le hanno chiarite: non è un caso che l'unità di carica sia il <em>coulomb</em>, quella di tensione il <em>volt</em>, quella di corrente l'<em>ampere</em>, la resistenza l'<em>ohm</em>. Ripercorrere questa vicenda aiuta a capire che ogni formula è la risposta a una domanda concreta che qualcuno si è posto.</p>
+    <ul class="timeline">
+      <li><span class="year">1752</span><span><span class="who">Benjamin Franklin</span> — con l'esperimento dell'aquilone lega il fulmine all'elettricità e introduce la convenzione dei segni (carica positiva e negativa).</span></li>
+      <li><span class="year">1785</span><span><span class="who">Charles-Augustin de Coulomb</span> — con la bilancia di torsione misura la forza tra cariche e ne stabilisce la legge quantitativa: la forza va come l'inverso del quadrato della distanza.</span></li>
+      <li><span class="year">1800</span><span><span class="who">Alessandro Volta</span> — inventa la pila, la prima sorgente di corrente continua stabile. Rende possibile lo studio sistematico dei circuiti.</span></li>
+      <li><span class="year">1820</span><span><span class="who">André-Marie Ampère</span> — fonda l'elettrodinamica studiando gli effetti magnetici della corrente; a lui è dedicata l'unità di intensità di corrente.</span></li>
+      <li><span class="year">1827</span><span><span class="who">Georg Simon Ohm</span> — pubblica la relazione tra tensione e corrente in un conduttore: la legge di Ohm.</span></li>
+      <li><span class="year">1831</span><span><span class="who">Michael Faraday</span> — introduce l'idea di <em>linee di forza</em> e di campo, uno dei concetti più fecondi della fisica.</span></li>
+      <li><span class="year">1840</span><span><span class="who">James Prescott Joule</span> — quantifica il calore prodotto dalla corrente in un resistore: l'effetto Joule.</span></li>
+      <li><span class="year">1845</span><span><span class="who">Gustav Kirchhoff</span> — formula le due leggi che permettono di risolvere qualsiasi rete di circuiti.</span></li>
+      <li><span class="year">~1835</span><span><span class="who">Carl Friedrich Gauss</span> — il suo teorema sul flusso lega il campo elettrico alla carica racchiusa da una superficie, offrendo una scorciatoia potente nei casi simmetrici.</span></li>
     </ul>
-
-    <!-- SVG dipolo -->
-    <svg class="diagram" viewBox="0 0 400 220" role="img" aria-label="Linee di campo di un dipolo elettrico">
-      <defs>
-        <marker id="arrH" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-          <path d="M0,0 L6,3 L0,6 Z" fill="var(--field-line)"/>
-        </marker>
-      </defs>
-      <g fill="none" stroke="var(--field-line)" stroke-width="1.4" opacity="0.85">
-        <path d="M150,110 C170,70 230,70 250,110" marker-end="url(#arrH)"/>
-        <path d="M150,110 C175,55 225,55 250,110" marker-end="url(#arrH)"/>
-        <path d="M150,110 C185,40 215,40 250,110" marker-end="url(#arrH)"/>
-        <path d="M150,110 C170,150 230,150 250,110" marker-end="url(#arrH)"/>
-        <path d="M150,110 C175,165 225,165 250,110" marker-end="url(#arrH)"/>
-        <path d="M150,110 C185,180 215,180 250,110" marker-end="url(#arrH)"/>
-        <path d="M150,110 C120,80 120,140 150,110" opacity="0"/>
-      </g>
-      <line x1="150" y1="110" x2="90" y2="110" stroke="var(--field-line)" stroke-width="1.4" marker-end="url(#arrH)"/>
-      <line x1="250" y1="110" x2="310" y2="110" stroke="var(--field-line)" stroke-width="1.4" marker-end="url(#arrH)"/>
-      <circle cx="150" cy="110" r="16" fill="var(--pos)"/>
-      <text x="150" y="116" text-anchor="middle" fill="#fff" font-weight="700" font-size="18">+</text>
-      <circle cx="250" cy="110" r="16" fill="var(--neg)"/>
-      <text x="250" y="116" text-anchor="middle" fill="#fff" font-weight="700" font-size="20">−</text>
-    </svg>
-    <div class="svg-cap">Dipolo elettrico: linee orientate dalla carica positiva (ambra) a quella negativa (blu).</div>
-
-    <p class="reassure">Se all'inizio "vedere" un campo vettoriale ti sembra difficile, è del tutto normale: è un'idea che si costruisce con l'abitudine. Nella sezione <strong>Simulazioni</strong> potrai spostare le cariche con il dito o il mouse e osservare le linee riorganizzarsi in tempo reale — è il modo più efficace per interiorizzarlo.</p>
-  </div>
-
-  <!-- ---------- 1.4 Gauss ---------- -->
-  <h2>4. Il teorema di Gauss</h2>
-  <div class="theory-block">
-    <p>Il <strong>flusso</strong> del campo elettrico attraverso una superficie chiusa misura "quante linee" la attraversano nette. Il teorema di Gauss afferma che dipende solo dalla carica racchiusa:</p>
-    <div class="eq">\[ \Phi(\vec E) = \oint \vec E \cdot d\vec A = \frac{Q_{\text{int}}}{\varepsilon_0} \]</div>
-
-    <div class="callout analogy">
-      <span class="tag">Analogia — l'acqua che sgorga</span>
-      <p style="margin:.3em 0 0">Immagina una sorgente d'acqua dentro un sacchetto chiuso: la quantità d'acqua che esce netta dal sacchetto dipende solo da quanta ne sgorga dalla sorgente interna, non dalla forma del sacchetto. Le cariche sono le "sorgenti" del campo; il flusso è l'acqua che esce. Scegliendo bene la superficie (la <em>superficie gaussiana</em>) sfruttiamo la simmetria per calcolare \(E\) facilmente.</p>
-    </div>
-
-    <p>Applicato a distribuzioni simmetriche, Gauss dà risultati eleganti:</p>
-    <div class="table-wrap">
-    <table class="data">
-      <thead><tr><th>Distribuzione</th><th>Campo elettrico</th><th>Dipendenza da r</th></tr></thead>
-      <tbody>
-        <tr><td>Piano infinito (densità \(\sigma\))</td><td>\(E = \dfrac{\sigma}{2\varepsilon_0}\)</td><td>Costante (uniforme)</td></tr>
-        <tr><td>Filo infinito (densità \(\lambda\))</td><td>\(E = \dfrac{\lambda}{2\pi\varepsilon_0\, r}\)</td><td>\(\propto 1/r\)</td></tr>
-        <tr><td>Sfera / carica puntiforme (esterno)</td><td>\(E = \dfrac{1}{4\pi\varepsilon_0}\dfrac{Q}{r^2}\)</td><td>\(\propto 1/r^2\)</td></tr>
-        <tr><td>Sfera conduttrice (interno)</td><td>\(E = 0\)</td><td>Nullo</td></tr>
-      </tbody>
-    </table>
-    </div>
-    <p>Nota il filo conduttore del ragionamento: <em>più "concentrata" è la sorgente, più rapidamente il campo cala con la distanza</em> — nullo per un piano (0 potenze di \(r\)), \(1/r\) per un filo, \(1/r^2\) per un punto.</p>
-  </div>
-
-  <!-- ---------- 1.5 Potenziale ---------- -->
-  <h2>5. Energia potenziale e potenziale elettrico</h2>
-  <div class="theory-block">
-    <p>Spostare una carica in un campo elettrico richiede (o libera) lavoro, esattamente come sollevare una massa nel campo gravitazionale. Si definisce l'<strong>energia potenziale elettrica</strong> e, dividendo per la carica, il <strong>potenziale</strong> \(V\):</p>
-    <div class="eq">\[ V = \frac{U}{q}, \qquad [V] = \frac{\mathrm{J}}{\mathrm{C}} = \mathrm{V\ (volt)} \]</div>
-    <p>Per una carica puntiforme (con \(V\to 0\) all'infinito):</p>
-    <div class="eq">\[ V = k\,\frac{Q}{r} \]</div>
-    <p>La <strong>differenza di potenziale</strong> \(\Delta V\) tra due punti è il lavoro per unità di carica per spostarla tra essi. In un campo uniforme (per esempio tra due lastre a distanza \(d\)):</p>
-    <div class="eq">\[ \Delta V = E\, d \quad\Longrightarrow\quad E = \frac{\Delta V}{d} \]</div>
-    <div class="callout analogy">
-      <span class="tag">Analogia — l'altezza</span>
-      <p style="margin:.3em 0 0">Il potenziale è come la <em>quota</em> in montagna: non conta il valore assoluto ma il dislivello. Una carica positiva "rotola" spontaneamente dai potenziali alti a quelli bassi, come una pallina scende a valle. La differenza di potenziale è il dislivello che, negli esercizi sui circuiti, chiameremo <strong>tensione</strong>.</p>
-    </div>
-  </div>
-
-  <!-- ---------- 2.1 Corrente ---------- -->
-  <h2>6. La corrente elettrica</h2>
-  <div class="theory-block">
-    <p>In un conduttore gli elettroni liberi, sotto una differenza di potenziale, si muovono ordinatamente. L'<strong>intensità di corrente</strong> è la carica che attraversa una sezione nell'unità di tempo:</p>
-    <div class="eq">\[ i = \frac{\Delta q}{\Delta t}, \qquad [i] = \frac{\mathrm{C}}{\mathrm{s}} = \mathrm{A\ (ampere)} \]</div>
-    <p>Per descrivere <em>come</em> la corrente si distribuisce nella sezione si usa la <strong>densità di corrente</strong> \(\vec J\), corrente per unità di area:</p>
-    <div class="eq">\[ J = \frac{i}{A}, \qquad [J] = \frac{\mathrm{A}}{\mathrm{m^2}} \]</div>
-    <div class="callout">
-      <span class="tag">Verso convenzionale</span>
-      <p style="margin:.3em 0 0">Per convenzione storica la corrente scorre nel verso in cui si muoverebbero le cariche <em>positive</em>: dal polo + al polo − nel circuito esterno. Gli elettroni, negativi, si muovono in verso opposto. Nella simulazione mostreremo il moto reale degli elettroni.</p>
-    </div>
-  </div>
-
-  <!-- ---------- 2.2 Ohm ---------- -->
-  <h2>7. Le leggi di Ohm e la resistività</h2>
-  <div class="theory-block">
-    <p><strong>Prima legge di Ohm</strong> — in molti conduttori la corrente è proporzionale alla tensione applicata:</p>
-    <div class="eq">\[ V = R\, i, \qquad [R] = \frac{\mathrm{V}}{\mathrm{A}} = \Omega\ (\text{ohm}) \]</div>
-    <p><strong>Seconda legge di Ohm</strong> — la resistenza di un filo dipende dal materiale e dalla geometria:</p>
-    <div class="eq">\[ R = \rho\,\frac{\ell}{A} \]</div>
-    <p>dove \(\rho\) è la <strong>resistività</strong> del materiale (\(\Omega\cdot\mathrm{m}\)), \(\ell\) la lunghezza e \(A\) la sezione. Un filo lungo e sottile resiste di più; corto e spesso resiste di meno.</p>
-
-    <div class="callout analogy">
-      <span class="tag">Analogia — l'acqua nei tubi</span>
-      <p style="margin:.3em 0 0">La tensione \(V\) è come la differenza di pressione, la corrente \(i\) come la portata d'acqua, la resistenza \(R\) come la strettezza del tubo. Un tubo lungo e stretto (grande \(R\)) lascia passare poca acqua a parità di pressione — esattamente come dice \(i = V/R\).</p>
-    </div>
-
-    <p><strong>Dipendenza dalla temperatura.</strong> Nei metalli la resistività cresce con la temperatura (gli ioni vibrano di più e ostacolano gli elettroni):</p>
-    <div class="eq">\[ \rho(T) = \rho_0\,[\,1 + \alpha\,(T - T_0)\,] \]</div>
-    <p>con \(\alpha\) coefficiente termico. Per questo la resistenza di una lampadina accesa è maggiore che da spenta.</p>
-  </div>
-
-  <!-- ---------- 2.3 Potenza ---------- -->
-  <h2>8. Potenza elettrica ed effetto Joule</h2>
-  <div class="theory-block">
-    <p>La potenza dissipata o erogata in un tratto di circuito è:</p>
-    <div class="eq">\[ P = V\, i \;=\; R\, i^2 \;=\; \frac{V^2}{R}, \qquad [P] = \mathrm{W\ (watt)} \]</div>
-    <p>In un resistore questa potenza si trasforma tutta in calore: è l'<strong>effetto Joule</strong>. L'energia dissipata in un tempo \(t\) è \(W = P\,t = R\,i^2\,t\).</p>
-    <div class="callout">
-      <span class="tag">Perché tre formule?</span>
-      <p style="margin:.3em 0 0">Sono la stessa relazione \(P=Vi\) combinata con \(V=Ri\). Usa quella che contiene le grandezze che <em>conosci già</em> nel problema: se sai \(R\) e \(i\), usa \(Ri^2\); se sai \(V\) e \(R\), usa \(V^2/R\).</p>
-    </div>
-  </div>
-
-  <!-- ---------- 2.4 Circuiti ---------- -->
-  <h2>9. Resistori in serie e in parallelo</h2>
-  <div class="theory-block">
-    <p><strong>In serie</strong> la stessa corrente attraversa tutti i resistori; le resistenze si sommano:</p>
-    <div class="eq">\[ R_{\text{serie}} = R_1 + R_2 + \dots \]</div>
-    <p><strong>In parallelo</strong> la stessa tensione è ai capi di tutti; si sommano i reciproci:</p>
-    <div class="eq">\[ \frac{1}{R_{\text{par}}} = \frac{1}{R_1} + \frac{1}{R_2} + \dots \]</div>
-    <p>Osservazione utile: la resistenza in parallelo è sempre <em>minore</em> della più piccola delle resistenze (più strade parallele = passa più corrente).</p>
-
-    <svg class="diagram" viewBox="0 0 420 200" role="img" aria-label="Resistori in serie e in parallelo">
-      <g stroke="var(--wire)" stroke-width="2.2" fill="none">
-        <!-- serie -->
-        <text x="60" y="24" fill="var(--muted)" font-size="13" stroke="none">Serie</text>
-        <path d="M20,55 H55"/>
-        <rect x="55" y="45" width="45" height="20" fill="var(--accent-soft)" stroke="var(--accent)"/>
-        <path d="M100,55 H150"/>
-        <rect x="150" y="45" width="45" height="20" fill="var(--accent-soft)" stroke="var(--accent)"/>
-        <path d="M195,55 H230"/>
-        <!-- parallelo -->
-        <text x="60" y="120" fill="var(--muted)" font-size="13" stroke="none">Parallelo</text>
-        <path d="M20,160 H55 M55,160 V135 M55,185 V135"/>
-        <rect x="55" y="125" width="45" height="20" fill="var(--pos-soft)" stroke="var(--pos)"/>
-        <rect x="55" y="175" width="45" height="20" fill="var(--pos-soft)" stroke="var(--pos)"/>
-        <path d="M100,135 H120 M100,185 H120 M120,135 V185 M120,160 H150"/>
-      </g>
-    </svg>
-  </div>
-
-  <!-- ---------- 2.5 Kirchhoff ---------- -->
-  <h2>10. Le leggi di Kirchhoff</h2>
-  <div class="theory-block">
-    <p><strong>Legge dei nodi</strong> (conservazione della carica): la somma delle correnti entranti in un nodo uguaglia la somma di quelle uscenti.</p>
-    <div class="eq">\[ \sum i_{\text{entranti}} = \sum i_{\text{uscenti}} \]</div>
-    <p><strong>Legge delle maglie</strong> (conservazione dell'energia): lungo qualsiasi percorso chiuso la somma algebrica delle differenze di potenziale è nulla.</p>
-    <div class="eq">\[ \sum_{\text{maglia}} \Delta V = 0 \]</div>
-    <div class="callout analogy">
-      <span class="tag">Analogia — i sentieri di montagna</span>
-      <p style="margin:.3em 0 0">La legge delle maglie dice che se percorri un anello e torni al punto di partenza, il dislivello totale è zero: ogni salita è compensata da una discesa. La legge dei nodi dice che l'acqua che arriva a un incrocio di tubi deve anche ripartire: nulla si accumula.</p>
-    </div>
-  </div>
-
-  <!-- ---------- 2.6 Generatore reale ---------- -->
-  <h2>11. Generatori reali: f.e.m. e resistenza interna</h2>
-  <div class="theory-block">
-    <p>Un generatore ideale manterrebbe ai suoi capi una tensione fissa. Un generatore <strong>reale</strong> ha una <strong>resistenza interna</strong> \(r\) che "consuma" parte della forza elettromotrice \(\varepsilon\). Collegato a un carico \(R\):</p>
-    <div class="eq">\[ i = \frac{\varepsilon}{R + r} \]</div>
-    <p>La tensione effettivamente disponibile ai morsetti (tensione a vuoto meno la caduta interna) è:</p>
-    <div class="eq">\[ V_{\text{morsetti}} = \varepsilon - r\, i \]</div>
-    <p>Per questo la tensione di una batteria "cala" quando le chiedi molta corrente: più \(i\), più grande la caduta \(r\,i\) al suo interno. Nella simulazione del circuito potrai vedere questo effetto muovendo lo slider della resistenza interna.</p>
-    <p class="reassure">Se ti sembra che ci siano molte formule tutte insieme, è comprensibile: sono però quasi tutte varianti di \(V = R\,i\). Il consiglio è di affrontarle una alla volta negli esercizi guidati, dove ognuna viene usata in un contesto concreto.</p>
-  </div>
-</section>
-
-<!-- ============================================================
-     SEZIONE 2 — SIMULAZIONI
-     ============================================================ -->
-<section id="simulazioni" class="section">
-  <h1>Simulazioni interattive</h1>
-  <p class="lead">Manipola direttamente i fenomeni: sposta le cariche e osserva le linee di campo riorganizzarsi, oppure regola tensione e resistenze e leggi corrente e potenza sugli strumenti virtuali.</p>
-
-  <!-- ---- SIM 1: CAMPO ELETTRICO ---- -->
-  <h2>Cariche puntiformi e linee di campo</h2>
-  <div class="sim-panel">
-    <div class="sim-canvas-wrap">
-      <canvas id="fieldCanvas" aria-label="Simulazione del campo elettrico con cariche trascinabili"></canvas>
-    </div>
-    <p style="font-size:.88rem;color:var(--muted);margin:10px 2px 0">
-      Trascina le cariche (ambra = positiva, blu = negativa). Le linee di campo si aggiornano in tempo reale.
-    </p>
-    <div class="toggle-row">
-      <label class="chk"><input type="checkbox" id="showLines" checked> Linee di campo</label>
-      <label class="chk"><input type="checkbox" id="showVectors"> Vettori del campo</label>
-      <label class="chk"><input type="checkbox" id="showPotential"> Mappa del potenziale</label>
-    </div>
-    <div class="btn-row">
-      <button class="btn pos" id="addPos">+ Carica positiva</button>
-      <button class="btn neg" id="addNeg">− Carica negativa</button>
-      <button class="btn" id="presetDipole">Preset: dipolo</button>
-      <button class="btn" id="presetTwoPos">Preset: due positive</button>
-      <button class="btn" id="clearCharges">Rimuovi tutte</button>
-    </div>
-    <div class="callout" style="margin-top:14px">
-      <span class="tag">Cosa osservare</span>
-      <p style="margin:.3em 0 0">Avvicina due cariche di segno opposto: le linee si "collegano" (dipolo). Mettine due dello stesso segno: nasce un punto di campo nullo tra loro, dove le linee si allontanano. Attiva la <em>mappa del potenziale</em> per vedere le "colline" (ambra, potenziale alto attorno alle positive) e le "valli" (blu, attorno alle negative).</p>
-    </div>
-  </div>
-
-  <!-- ---- SIM 2: CIRCUITO ---- -->
-  <h2>Circuito in corrente continua</h2>
-  <div class="sim-panel">
-    <div class="sim-canvas-wrap">
-      <canvas id="circuitCanvas" aria-label="Simulazione di un circuito con generatore reale e due resistori"></canvas>
-    </div>
-    <div class="controls">
-      <div class="control">
-        <label>F.e.m. \(\varepsilon\) <span class="val" id="emfVal">9.0 V</span></label>
-        <input type="range" id="emf" min="1" max="24" step="0.5" value="9">
-      </div>
-      <div class="control">
-        <label>Resistenza interna \(r\) <span class="val" id="rintVal">0.5 Ω</span></label>
-        <input type="range" id="rint" min="0" max="5" step="0.1" value="0.5">
-      </div>
-      <div class="control">
-        <label>R₁ <span class="val" id="r1Val">100 Ω</span></label>
-        <input type="range" id="r1" min="10" max="500" step="5" value="100">
-      </div>
-      <div class="control">
-        <label>R₂ <span class="val" id="r2Val">100 Ω</span></label>
-        <input type="range" id="r2" min="10" max="500" step="5" value="100">
-      </div>
-    </div>
-    <div class="toggle-row" style="margin-top:12px">
-      <span style="font-size:.85rem;color:var(--muted);font-weight:600">Collegamento R₁–R₂:</span>
-      <label class="chk"><input type="radio" name="topo" id="topoSeries" checked> Serie</label>
-      <label class="chk"><input type="radio" name="topo" id="topoParallel"> Parallelo</label>
-    </div>
-
-    <div class="meters">
-      <div class="meter r"><div class="m-label">Resistenza equiv.</div><div class="m-val" id="mReq">—</div><div class="m-unit">Ω (R₁,R₂)</div></div>
-      <div class="meter i"><div class="m-label">Amperometro</div><div class="m-val" id="mI">—</div><div class="m-unit">corrente i</div></div>
-      <div class="meter v"><div class="m-label">Voltmetro (morsetti)</div><div class="m-val" id="mV">—</div><div class="m-unit">tensione</div></div>
-      <div class="meter p"><div class="m-label">Potenza dissipata</div><div class="m-val" id="mP">—</div><div class="m-unit">effetto Joule</div></div>
-    </div>
-    <div class="callout" style="margin-top:14px">
-      <span class="tag">Cosa osservare</span>
-      <p style="margin:.3em 0 0">Gli elettroni (blu) si muovono più velocemente quando la corrente è più alta. Passa da serie a parallelo mantenendo le stesse \(R_1,R_2\): la resistenza equivalente cala, la corrente cresce. Aumenta la resistenza interna \(r\) e nota come la tensione ai morsetti scende: è la caduta \(r\,i\) del generatore reale.</p>
+    <div class="callout history">
+      <span class="tag">Perché comincia con le cariche ferme</span>
+      <p style="margin:.3em 0 0">Storicamente si è capita prima l'elettrostatica (cariche a riposo) e poi la corrente (cariche in moto). Seguiremo lo stesso ordine: i Moduli 1 e 2 costruiscono il concetto di campo e potenziale; i Moduli 3 e 4 li mettono in moto nei circuiti.</p>
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SEZIONE 3 — ESERCIZI
+     MODULO 1 — LEGGE DI COULOMB E CAMPO ELETTRICO
      ============================================================ -->
-<section id="esercizi" class="section">
-  <h1>Esercizi guidati</h1>
-  <p class="lead">Difficoltà crescente. Ogni esercizio offre suggerimenti progressivi: prova prima da solo, poi chiedi un aiuto alla volta. La soluzione compare solo quando decidi tu.</p>
-
-  <div class="callout">
-    <span class="tag">Come usarli</span>
-    <p style="margin:.3em 0 0">Inserisci il risultato numerico (usa il punto per i decimali, es. <code>3.2</code>). Il controllo accetta una piccola tolleranza. Non è una gara: gli aiuti servono proprio a farti ragionare, non a "sbirciare".</p>
+<section id="mod1" class="module">
+  <div class="module-head">
+    <div class="m-kicker">Modulo 1</div>
+    <h1>Legge di Coulomb e campo elettrico</h1>
+    <p class="lead">Come due cariche si esercitano una forza a distanza e come questa forza si descrive attraverso il campo elettrico e le sue linee.</p>
+  </div>
+  <div class="subnav" role="tablist">
+    <button class="subtab active" data-sub="m1-teoria">Teoria</button>
+    <button class="subtab" data-sub="m1-sim">Simulazioni</button>
+    <button class="subtab" data-sub="m1-eser">Esercizi</button>
+    <button class="subtab" data-sub="m1-quiz">Quiz</button>
   </div>
 
-  <div id="exercisesContainer"></div>
+  <!-- Teoria M1 -->
+  <div class="pane active" id="m1-teoria">
+    <div class="theory-block">
+      <h2>1. La legge di Coulomb</h2>
+      <p>Due cariche puntiformi \(q_1\) e \(q_2\) a distanza \(r\) si esercitano una forza diretta lungo la retta che le congiunge, di intensità:</p>
+      <div class="eq">\[ F = k\,\frac{|q_1 q_2|}{r^2}, \qquad k=\frac{1}{4\pi\varepsilon_0}\approx 8{,}99\times10^{9}\ \mathrm{N\,m^2/C^2} \]</div>
+      <p>con \(\varepsilon_0\approx 8{,}85\times10^{-12}\ \mathrm{F/m}\). La forza è <strong>repulsiva</strong> tra cariche dello stesso segno, <strong>attrattiva</strong> tra cariche di segno opposto.</p>
+      <div class="callout analogy">
+        <span class="tag">Analogia — gravitazione</span>
+        <p style="margin:.3em 0 0">Confronta con \(F=G\,\dfrac{m_1 m_2}{r^2}\): stessa struttura, prodotto delle sorgenti diviso la distanza al quadrato. Ma la massa è sempre positiva (la gravità solo attira), mentre la carica ha due segni: l'elettricità <em>attira e respinge</em>. E \(k\) è enormemente più grande di \(G\): l'interazione elettrica è molto più intensa.</p>
+      </div>
+      <p class="reassure">È normale che l'ordine di grandezza di \(k\) sembri astratto: il senso pratico emerge negli esercizi, dove poche cariche da qualche microcoulomb producono forze di parecchi newton.</p>
+    </div>
+
+    <div class="theory-block">
+      <h2>2. Il campo elettrico E</h2>
+      <p>La forza dipende dalla carica di prova usata per misurarla. Per descrivere lo spazio in modo indipendente da essa si definisce il <strong>campo elettrico</strong> come forza per unità di carica:</p>
+      <div class="eq">\[ \vec E=\frac{\vec F}{q_0}, \qquad [E]=\frac{\mathrm N}{\mathrm C}=\frac{\mathrm V}{\mathrm m} \]</div>
+      <p>Il campo di una carica puntiforme \(Q\) a distanza \(r\) ha intensità \( E=k\,\dfrac{|Q|}{r^2}\), diretto <em>lontano</em> da una carica positiva e <em>verso</em> una negativa.</p>
+      <div class="callout analogy">
+        <span class="tag">Analogia — la pendenza</span>
+        <p style="margin:.3em 0 0">Il campo è come la pendenza di un terreno: esiste in ogni punto anche se nessuna pallina ci sta rotolando. Quando appoggi una carica di prova, essa "sente" la pendenza e viene spinta: \(\vec F=q\vec E\).</p>
+      </div>
+    </div>
+
+    <div class="theory-block">
+      <h2>3. Sovrapposizione e linee di campo</h2>
+      <p>Il campo di più cariche è la <strong>somma vettoriale</strong> dei campi di ciascuna:</p>
+      <div class="eq">\[ \vec E_{\text{tot}}=\sum_i k\,\frac{q_i}{r_i^2}\,\hat r_i \]</div>
+      <p>Le <strong>linee di campo</strong> sono tangenti in ogni punto a \(\vec E\): escono dalle cariche positive, entrano nelle negative, non si incrociano mai e sono più fitte dove il campo è più intenso.</p>
+      <svg class="diagram" viewBox="0 0 400 220" role="img" aria-label="Linee di campo di un dipolo">
+        <defs><marker id="arrH1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="var(--field-line)"/></marker></defs>
+        <g fill="none" stroke="var(--field-line)" stroke-width="1.4" opacity="0.85">
+          <path d="M150,110 C170,70 230,70 250,110" marker-end="url(#arrH1)"/>
+          <path d="M150,110 C175,55 225,55 250,110" marker-end="url(#arrH1)"/>
+          <path d="M150,110 C185,40 215,40 250,110" marker-end="url(#arrH1)"/>
+          <path d="M150,110 C170,150 230,150 250,110" marker-end="url(#arrH1)"/>
+          <path d="M150,110 C175,165 225,165 250,110" marker-end="url(#arrH1)"/>
+          <path d="M150,110 C185,180 215,180 250,110" marker-end="url(#arrH1)"/>
+        </g>
+        <line x1="150" y1="110" x2="90" y2="110" stroke="var(--field-line)" stroke-width="1.4" marker-end="url(#arrH1)"/>
+        <line x1="250" y1="110" x2="310" y2="110" stroke="var(--field-line)" stroke-width="1.4" marker-end="url(#arrH1)"/>
+        <circle cx="150" cy="110" r="16" fill="var(--pos)"/><text x="150" y="116" text-anchor="middle" fill="#fff" font-weight="700" font-size="18">+</text>
+        <circle cx="250" cy="110" r="16" fill="var(--neg)"/><text x="250" y="116" text-anchor="middle" fill="#fff" font-weight="700" font-size="20">−</text>
+      </svg>
+      <div class="svg-cap">Dipolo: linee orientate dalla carica positiva (ambra) a quella negativa (blu).</div>
+      <p class="reassure">Se "vedere" un campo vettoriale ti sembra difficile all'inizio, è comprensibile. Nella sotto-scheda <strong>Simulazioni</strong> puoi spostare le cariche e osservare le linee riorganizzarsi: è il modo più efficace per interiorizzarlo.</p>
+    </div>
+  </div>
+
+  <!-- Simulazioni M1 -->
+  <div class="pane" id="m1-sim">
+    <div class="sim-panel">
+      <h3>Cariche puntiformi e linee di campo</h3>
+      <div class="sim-canvas-wrap"><canvas id="fieldCanvas1" aria-label="Simulazione del campo elettrico con cariche trascinabili"></canvas></div>
+      <p style="font-size:.88rem;color:var(--muted);margin:10px 2px 0">Trascina le cariche (ambra = positiva, blu = negativa). Le linee di campo si aggiornano in tempo reale.</p>
+      <div class="toggle-row">
+        <label class="chk"><input type="checkbox" data-tog="lines" checked> Linee di campo</label>
+        <label class="chk"><input type="checkbox" data-tog="vectors"> Vettori del campo</label>
+      </div>
+      <div class="btn-row">
+        <button class="btn pos" data-act="addPos">+ Carica positiva</button>
+        <button class="btn neg" data-act="addNeg">− Carica negativa</button>
+        <button class="btn" data-act="dipole">Preset: dipolo</button>
+        <button class="btn" data-act="twoPos">Preset: due positive</button>
+        <button class="btn" data-act="clear">Rimuovi tutte</button>
+      </div>
+      <div class="callout" style="margin-top:14px">
+        <span class="tag">Cosa osservare</span>
+        <p style="margin:.3em 0 0">Avvicina due cariche di segno opposto: le linee si "collegano". Mettine due dello stesso segno: nasce un punto di campo nullo tra loro, dove le linee si respingono.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Esercizi M1 -->
+  <div class="pane" id="m1-eser"><div class="eser-list" id="eser-m1"></div></div>
+  <!-- Quiz M1 -->
+  <div class="pane" id="m1-quiz"><div id="quiz-m1"></div></div>
 </section>
 
 <!-- ============================================================
-     SEZIONE 4 — QUIZ
+     MODULO 2 — POTENZIALE E TEOREMA DI GAUSS
      ============================================================ -->
-<section id="quiz" class="section">
-  <h1>Quiz</h1>
-  <p class="lead">Due quiz per argomento con <strong>correzione immediata</strong> domanda per domanda, e un <strong>quiz finale di riepilogo</strong> che mostra punteggio e spiegazioni solo alla fine. In tutti i quiz la posizione della risposta esatta è casuale, quindi ricomincia pure più volte: le opzioni si rimescolano.</p>
-
-  <div class="quiz-subnav">
-    <button class="subtab active" data-pane="pane-campo">Sezione 1 · Campo elettrico</button>
-    <button class="subtab" data-pane="pane-corrente">Sezione 2 · Corrente continua</button>
-    <button class="subtab" data-pane="pane-finale">Quiz finale · Riepilogo</button>
+<section id="mod2" class="module">
+  <div class="module-head">
+    <div class="m-kicker">Modulo 2</div>
+    <h1>Potenziale elettrico e teorema di Gauss</h1>
+    <p class="lead">L'energia in gioco quando si sposta una carica, il potenziale come "quota" elettrica, e uno strumento potente per calcolare il campo nei casi simmetrici.</p>
+  </div>
+  <div class="subnav" role="tablist">
+    <button class="subtab active" data-sub="m2-teoria">Teoria</button>
+    <button class="subtab" data-sub="m2-sim">Simulazioni</button>
+    <button class="subtab" data-sub="m2-eser">Esercizi</button>
+    <button class="subtab" data-sub="m2-quiz">Quiz</button>
   </div>
 
-  <div class="quiz-pane active" id="pane-campo"></div>
-  <div class="quiz-pane" id="pane-corrente"></div>
-  <div class="quiz-pane" id="pane-finale"></div>
+  <div class="pane active" id="m2-teoria">
+    <div class="theory-block">
+      <h2>1. Energia potenziale e potenziale</h2>
+      <p>Spostare una carica nel campo richiede o libera lavoro, come sollevare una massa nel campo gravitazionale. Si definisce il <strong>potenziale</strong> come energia potenziale per unità di carica:</p>
+      <div class="eq">\[ V=\frac{U}{q}, \qquad [V]=\frac{\mathrm J}{\mathrm C}=\mathrm{V\ (volt)} \]</div>
+      <p>Per una carica puntiforme (con \(V\to0\) all'infinito): \( V=k\,\dfrac{Q}{r}\). Tra due punti la <strong>differenza di potenziale</strong> è il lavoro per unità di carica per spostarla. In un campo uniforme (es. tra due lastre a distanza \(d\)):</p>
+      <div class="eq">\[ \Delta V=E\,d \quad\Longrightarrow\quad E=\frac{\Delta V}{d} \]</div>
+      <div class="callout analogy">
+        <span class="tag">Analogia — l'altezza</span>
+        <p style="margin:.3em 0 0">Il potenziale è come la quota in montagna: conta il dislivello, non il valore assoluto. Una carica positiva "scende" spontaneamente dai potenziali alti a quelli bassi. Nei circuiti chiameremo questo dislivello <strong>tensione</strong>.</p>
+      </div>
+    </div>
+
+    <div class="theory-block">
+      <h2>2. Il teorema di Gauss</h2>
+      <p>Il <strong>flusso</strong> del campo attraverso una superficie chiusa misura quante linee la attraversano nette; dipende solo dalla carica racchiusa:</p>
+      <div class="eq">\[ \Phi(\vec E)=\oint \vec E\cdot d\vec A=\frac{Q_{\text{int}}}{\varepsilon_0} \]</div>
+      <div class="callout analogy">
+        <span class="tag">Analogia — l'acqua che sgorga</span>
+        <p style="margin:.3em 0 0">Una sorgente dentro un sacchetto chiuso: l'acqua che esce netta dipende solo da quanta ne sgorga all'interno, non dalla forma del sacchetto. Le cariche sono le sorgenti, il flusso è l'acqua. Scegliendo bene la superficie (<em>gaussiana</em>) sfruttiamo la simmetria per ricavare \(E\).</p>
+      </div>
+      <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Distribuzione</th><th>Campo elettrico</th><th>Dipendenza da r</th></tr></thead>
+        <tbody>
+          <tr><td>Piano infinito (densità \(\sigma\))</td><td>\(E=\dfrac{\sigma}{2\varepsilon_0}\)</td><td>Costante</td></tr>
+          <tr><td>Filo infinito (densità \(\lambda\))</td><td>\(E=\dfrac{\lambda}{2\pi\varepsilon_0 r}\)</td><td>\(\propto 1/r\)</td></tr>
+          <tr><td>Sfera / punto (esterno)</td><td>\(E=\dfrac{1}{4\pi\varepsilon_0}\dfrac{Q}{r^2}\)</td><td>\(\propto 1/r^2\)</td></tr>
+          <tr><td>Conduttore (interno)</td><td>\(E=0\)</td><td>Nullo</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>Più "concentrata" è la sorgente, più rapidamente il campo cala: nullo per un piano, \(1/r\) per un filo, \(1/r^2\) per un punto.</p>
+      <p class="reassure">Nella sotto-scheda <strong>Simulazioni</strong> puoi variare il raggio di una superficie gaussiana attorno a una carica e verificare con gli occhi che il flusso resta costante mentre il campo sulla superficie diminuisce.</p>
+    </div>
+  </div>
+
+  <div class="pane" id="m2-sim">
+    <div class="sim-panel">
+      <h3>Mappa del potenziale ed equipotenziali</h3>
+      <div class="sim-canvas-wrap"><canvas id="fieldCanvas2" aria-label="Mappa del potenziale con cariche trascinabili"></canvas></div>
+      <p style="font-size:.88rem;color:var(--muted);margin:10px 2px 0">Trascina le cariche. Le zone ambra sono a potenziale alto (attorno alle positive), le blu a potenziale basso. Le linee equipotenziali uniscono i punti allo stesso potenziale e sono sempre perpendicolari alle linee di campo.</p>
+      <div class="toggle-row">
+        <label class="chk"><input type="checkbox" data-tog="potential" checked> Mappa del potenziale</label>
+        <label class="chk"><input type="checkbox" data-tog="equipotential" checked> Linee equipotenziali</label>
+        <label class="chk"><input type="checkbox" data-tog="lines"> Linee di campo</label>
+      </div>
+      <div class="btn-row">
+        <button class="btn pos" data-act="addPos">+ Carica positiva</button>
+        <button class="btn neg" data-act="addNeg">− Carica negativa</button>
+        <button class="btn" data-act="dipole">Preset: dipolo</button>
+        <button class="btn" data-act="clear">Rimuovi tutte</button>
+      </div>
+    </div>
+
+    <div class="sim-panel">
+      <h3>Teorema di Gauss: flusso attraverso una sfera</h3>
+      <div class="sim-canvas-wrap"><canvas id="gaussCanvas" aria-label="Simulazione del teorema di Gauss"></canvas></div>
+      <div class="controls">
+        <div class="control"><label>Carica \(Q\) <span class="val" id="gaussQVal">+2.0 nC</span></label>
+          <input type="range" id="gaussQ" min="-5" max="5" step="0.5" value="2"></div>
+        <div class="control"><label>Raggio della superficie \(r\) <span class="val" id="gaussRVal">1.0 (rel.)</span></label>
+          <input type="range" id="gaussR" min="0.5" max="2.2" step="0.05" value="1.0"></div>
+      </div>
+      <div class="meters">
+        <div class="meter e"><div class="m-label">Campo E sulla superficie</div><div class="m-val" id="gaussE">—</div><div class="m-unit">\(\propto 1/r^2\)</div></div>
+        <div class="meter r"><div class="m-label">Flusso Φ</div><div class="m-val" id="gaussFlux">—</div><div class="m-unit">= Q/ε₀ (costante)</div></div>
+      </div>
+      <div class="callout" style="margin-top:14px">
+        <span class="tag">Cosa osservare</span>
+        <p style="margin:.3em 0 0">Allargando la superficie il campo su di essa diminuisce (frecce più corte), ma il <strong>flusso non cambia</strong>: dipende solo dalla carica racchiusa. Se porti \(Q\) a zero o cambi segno, cambia il verso delle frecce e il flusso.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="pane" id="m2-eser"><div class="eser-list" id="eser-m2"></div></div>
+  <div class="pane" id="m2-quiz"><div id="quiz-m2"></div></div>
+</section>
+
+<!-- ============================================================
+     MODULO 3 — CORRENTE E LEGGI DI OHM
+     ============================================================ -->
+<section id="mod3" class="module">
+  <div class="module-head">
+    <div class="m-kicker">Modulo 3</div>
+    <h1>Corrente elettrica e leggi di Ohm</h1>
+    <p class="lead">Le cariche si mettono in moto: intensità e densità di corrente, la relazione tra tensione e corrente, la resistenza e il calore che si sviluppa.</p>
+  </div>
+  <div class="subnav" role="tablist">
+    <button class="subtab active" data-sub="m3-teoria">Teoria</button>
+    <button class="subtab" data-sub="m3-sim">Simulazioni</button>
+    <button class="subtab" data-sub="m3-eser">Esercizi</button>
+    <button class="subtab" data-sub="m3-quiz">Quiz</button>
+  </div>
+
+  <div class="pane active" id="m3-teoria">
+    <div class="theory-block">
+      <h2>1. La corrente elettrica</h2>
+      <p>In un conduttore gli elettroni liberi, sotto una differenza di potenziale, si muovono ordinatamente. L'<strong>intensità di corrente</strong> è la carica che attraversa una sezione nell'unità di tempo:</p>
+      <div class="eq">\[ i=\frac{\Delta q}{\Delta t}, \qquad [i]=\frac{\mathrm C}{\mathrm s}=\mathrm{A\ (ampere)} \]</div>
+      <p>La <strong>densità di corrente</strong> descrive come la corrente si distribuisce nella sezione: \( J=\dfrac{i}{A}\).</p>
+      <div class="callout">
+        <span class="tag">Verso convenzionale</span>
+        <p style="margin:.3em 0 0">Per convenzione la corrente scorre nel verso delle cariche positive (dal + al − nel circuito esterno). Gli elettroni, negativi, si muovono in verso opposto — come mostrano le simulazioni.</p>
+      </div>
+    </div>
+    <div class="theory-block">
+      <h2>2. Le leggi di Ohm e la resistività</h2>
+      <p><strong>Prima legge di Ohm</strong>: nei conduttori ohmici la corrente è proporzionale alla tensione:</p>
+      <div class="eq">\[ V=R\,i, \qquad [R]=\frac{\mathrm V}{\mathrm A}=\Omega\ (\text{ohm}) \]</div>
+      <p><strong>Seconda legge di Ohm</strong>: la resistenza dipende dal materiale e dalla geometria:</p>
+      <div class="eq">\[ R=\rho\,\frac{\ell}{A} \]</div>
+      <p>con \(\rho\) resistività (\(\Omega\cdot\mathrm m\)). Un filo lungo e sottile resiste di più.</p>
+      <div class="callout analogy">
+        <span class="tag">Analogia — l'acqua nei tubi</span>
+        <p style="margin:.3em 0 0">La tensione è come la differenza di pressione, la corrente come la portata, la resistenza come la strettezza del tubo: un tubo lungo e stretto lascia passare poca acqua, esattamente come \(i=V/R\).</p>
+      </div>
+      <p><strong>Dipendenza dalla temperatura</strong>: nei metalli \(\rho(T)=\rho_0[1+\alpha(T-T_0)]\), con \(\alpha>0\); per questo una lampadina accesa ha resistenza maggiore che da spenta.</p>
+    </div>
+    <div class="theory-block">
+      <h2>3. Potenza ed effetto Joule</h2>
+      <p>La potenza erogata o dissipata in un tratto di circuito è:</p>
+      <div class="eq">\[ P=V\,i=R\,i^2=\frac{V^2}{R}, \qquad [P]=\mathrm{W\ (watt)} \]</div>
+      <p>In un resistore si trasforma tutta in calore: è l'<strong>effetto Joule</strong>. L'energia in un tempo \(t\) è \(W=P\,t\).</p>
+      <div class="callout">
+        <span class="tag">Quale delle tre formule usare</span>
+        <p style="margin:.3em 0 0">Sono la stessa relazione: scegli quella con le grandezze che già conosci. Se hai \(R\) e \(i\), usa \(Ri^2\); se hai \(V\) e \(R\), usa \(V^2/R\).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="pane" id="m3-sim">
+    <div class="sim-panel">
+      <h3>Legge di Ohm: un conduttore sotto tensione</h3>
+      <div class="sim-canvas-wrap"><canvas id="ohmCanvas" aria-label="Simulazione della legge di Ohm"></canvas></div>
+      <div class="controls">
+        <div class="control"><label>Tensione \(V\) <span class="val" id="ohmVVal">6.0 V</span></label>
+          <input type="range" id="ohmV" min="0" max="12" step="0.5" value="6"></div>
+        <div class="control"><label>Resistenza \(R\) <span class="val" id="ohmRVal">30 Ω</span></label>
+          <input type="range" id="ohmR" min="2" max="100" step="1" value="30"></div>
+      </div>
+      <div class="meters">
+        <div class="meter i"><div class="m-label">Corrente</div><div class="m-val" id="ohmI">—</div><div class="m-unit">i = V/R</div></div>
+        <div class="meter p"><div class="m-label">Potenza dissipata</div><div class="m-val" id="ohmP">—</div><div class="m-unit">effetto Joule</div></div>
+      </div>
+      <div class="callout" style="margin-top:14px">
+        <span class="tag">Cosa osservare</span>
+        <p style="margin:.3em 0 0">Gli elettroni scorrono più velocemente quando la corrente è più alta (più tensione o meno resistenza). Il grafico mostra la retta \(i=V/R\): a resistenza fissa il legame tensione–corrente è lineare. Il bagliore del conduttore rappresenta il calore dissipato (potenza).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="pane" id="m3-eser"><div class="eser-list" id="eser-m3"></div></div>
+  <div class="pane" id="m3-quiz"><div id="quiz-m3"></div></div>
+</section>
+
+<!-- ============================================================
+     MODULO 4 — CIRCUITI IN CORRENTE CONTINUA
+     ============================================================ -->
+<section id="mod4" class="module">
+  <div class="module-head">
+    <div class="m-kicker">Modulo 4</div>
+    <h1>Circuiti in corrente continua</h1>
+    <p class="lead">Come si combinano i resistori, le regole che governano qualsiasi rete e il comportamento dei generatori reali.</p>
+  </div>
+  <div class="subnav" role="tablist">
+    <button class="subtab active" data-sub="m4-teoria">Teoria</button>
+    <button class="subtab" data-sub="m4-sim">Simulazioni</button>
+    <button class="subtab" data-sub="m4-eser">Esercizi</button>
+    <button class="subtab" data-sub="m4-quiz">Quiz</button>
+  </div>
+
+  <div class="pane active" id="m4-teoria">
+    <div class="theory-block">
+      <h2>1. Resistori in serie e in parallelo</h2>
+      <p><strong>In serie</strong> la stessa corrente attraversa tutti; le resistenze si sommano: \( R_{\text{serie}}=R_1+R_2+\dots\)</p>
+      <p><strong>In parallelo</strong> la stessa tensione è ai capi di tutti; si sommano i reciproci:</p>
+      <div class="eq">\[ \frac{1}{R_{\text{par}}}=\frac{1}{R_1}+\frac{1}{R_2}+\dots \]</div>
+      <p>La resistenza in parallelo è sempre <em>minore</em> della più piccola: più strade parallele lasciano passare più corrente.</p>
+      <svg class="diagram" viewBox="0 0 420 200" role="img" aria-label="Resistori in serie e parallelo">
+        <g stroke="var(--wire)" stroke-width="2.2" fill="none">
+          <text x="60" y="24" fill="var(--muted)" font-size="13" stroke="none">Serie</text>
+          <path d="M20,55 H55"/><rect x="55" y="45" width="45" height="20" fill="var(--accent-soft)" stroke="var(--accent)"/>
+          <path d="M100,55 H150"/><rect x="150" y="45" width="45" height="20" fill="var(--accent-soft)" stroke="var(--accent)"/>
+          <path d="M195,55 H230"/>
+          <text x="60" y="120" fill="var(--muted)" font-size="13" stroke="none">Parallelo</text>
+          <path d="M20,160 H55 M55,160 V135 M55,185 V135"/>
+          <rect x="55" y="125" width="45" height="20" fill="var(--pos-soft)" stroke="var(--pos)"/>
+          <rect x="55" y="175" width="45" height="20" fill="var(--pos-soft)" stroke="var(--pos)"/>
+          <path d="M100,135 H120 M100,185 H120 M120,135 V185 M120,160 H150"/>
+        </g>
+      </svg>
+    </div>
+    <div class="theory-block">
+      <h2>2. Le leggi di Kirchhoff</h2>
+      <p><strong>Legge dei nodi</strong> (conservazione della carica): \( \sum i_{\text{entranti}}=\sum i_{\text{uscenti}}\).</p>
+      <p><strong>Legge delle maglie</strong> (conservazione dell'energia): \( \sum_{\text{maglia}}\Delta V=0\).</p>
+      <div class="callout analogy">
+        <span class="tag">Analogia — i sentieri di montagna</span>
+        <p style="margin:.3em 0 0">La legge delle maglie dice che percorrendo un anello e tornando al punto di partenza il dislivello totale è zero. La legge dei nodi dice che a un incrocio di tubi nulla si accumula: l'acqua che entra riparte.</p>
+      </div>
+    </div>
+    <div class="theory-block">
+      <h2>3. Generatori reali: f.e.m. e resistenza interna</h2>
+      <p>Un generatore reale ha una <strong>resistenza interna</strong> \(r\) che consuma parte della forza elettromotrice \(\varepsilon\). Con un carico \(R\):</p>
+      <div class="eq">\[ i=\frac{\varepsilon}{R+r}, \qquad V_{\text{morsetti}}=\varepsilon-r\,i \]</div>
+      <p>Per questo la tensione di una batteria cala quando le si chiede molta corrente: più \(i\), più grande la caduta \(r\,i\) interna. Nella simulazione puoi vederlo muovendo lo slider della resistenza interna.</p>
+    </div>
+  </div>
+
+  <div class="pane" id="m4-sim">
+    <div class="sim-panel">
+      <h3>Circuito con generatore reale e due resistori</h3>
+      <div class="sim-canvas-wrap"><canvas id="circuitCanvas" aria-label="Simulazione di un circuito"></canvas></div>
+      <div class="controls">
+        <div class="control"><label>F.e.m. \(\varepsilon\) <span class="val" id="emfVal">9.0 V</span></label>
+          <input type="range" id="emf" min="1" max="24" step="0.5" value="9"></div>
+        <div class="control"><label>Resistenza interna \(r\) <span class="val" id="rintVal">0.5 Ω</span></label>
+          <input type="range" id="rint" min="0" max="5" step="0.1" value="0.5"></div>
+        <div class="control"><label>R₁ <span class="val" id="r1Val">100 Ω</span></label>
+          <input type="range" id="r1" min="10" max="500" step="5" value="100"></div>
+        <div class="control"><label>R₂ <span class="val" id="r2Val">100 Ω</span></label>
+          <input type="range" id="r2" min="10" max="500" step="5" value="100"></div>
+      </div>
+      <div class="toggle-row" style="margin-top:12px">
+        <span style="font-size:.85rem;color:var(--muted);font-weight:600">Collegamento R₁–R₂:</span>
+        <label class="chk"><input type="radio" name="topo" id="topoSeries" checked> Serie</label>
+        <label class="chk"><input type="radio" name="topo" id="topoParallel"> Parallelo</label>
+      </div>
+      <div class="meters">
+        <div class="meter r"><div class="m-label">Resistenza equiv.</div><div class="m-val" id="mReq">—</div><div class="m-unit">Ω (R₁,R₂)</div></div>
+        <div class="meter i"><div class="m-label">Amperometro</div><div class="m-val" id="mI">—</div><div class="m-unit">corrente i</div></div>
+        <div class="meter v"><div class="m-label">Voltmetro (morsetti)</div><div class="m-val" id="mV">—</div><div class="m-unit">tensione</div></div>
+        <div class="meter p"><div class="m-label">Potenza dissipata</div><div class="m-val" id="mP">—</div><div class="m-unit">effetto Joule</div></div>
+      </div>
+      <div class="callout" style="margin-top:14px">
+        <span class="tag">Cosa osservare</span>
+        <p style="margin:.3em 0 0">In parallelo la corrente si divide tra i due rami e si ricongiunge sul tratto comune. Passando da serie a parallelo con le stesse \(R_1,R_2\), la resistenza equivalente cala e la corrente cresce. Aumentando \(r\), la tensione ai morsetti scende: è la caduta \(r\,i\) del generatore reale.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="pane" id="m4-eser"><div class="eser-list" id="eser-m4"></div></div>
+  <div class="pane" id="m4-quiz"><div id="quiz-m4"></div></div>
 </section>
 
 <div class="footer-note">
-  Web app didattica — Campo elettrico e corrente elettrica continua · Fisica, ultimo anno di liceo scientifico.<br>
-  Costruita come singolo file HTML autocontenuto. Le formule sono composte con MathJax.
+  Percorso didattico — Campo elettrico e corrente elettrica continua · Fisica, ultimo anno di liceo scientifico.<br>
+  Singolo file HTML autocontenuto. Formule composte con MathJax.
 </div>
-
 </main>
 
 <script>
 /* ============================================================
-   NAVIGAZIONE SEZIONI
+   TEMA GIORNO / NOTTE
    ============================================================ */
-const navBtns = document.querySelectorAll('.nav-btn');
-const sections = document.querySelectorAll('.section');
-navBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const target = btn.dataset.target;
-    navBtns.forEach(b => b.classList.toggle('active', b === btn));
-    sections.forEach(s => s.classList.toggle('active', s.id === target));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Le simulazioni vanno (ri)dimensionate quando diventano visibili:
-    // un canvas nascosto ha larghezza 0 e non disegnerebbe nulla.
-    if (target === 'simulazioni') {
-      if (window.__fieldEnsure) window.__fieldEnsure();
-      if (window.__circuitResize) window.__circuitResize();
-    }
-  });
-});
-
-/* ============================================================
-   TOGGLE TEMA GIORNO / NOTTE
-   ============================================================ */
-const themeToggle = document.getElementById('themeToggle');
-const knob = document.getElementById('knob');
 const root = document.documentElement;
-
-function applyTheme(mode) {
-  root.setAttribute('data-theme', mode);
-  knob.textContent = mode === 'dark' ? '☾' : '☀';
-  try { localStorage.setItem('ce-theme', mode); } catch (e) {}
-}
-(function initTheme() {
-  let saved = null;
-  try { saved = localStorage.getItem('ce-theme'); } catch (e) {}
-  if (!saved) {
-    saved = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  applyTheme(saved);
-})();
-themeToggle.addEventListener('click', () => {
-  const now = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-  applyTheme(now);
-  // Ridisegna le simulazioni con i nuovi colori
-  if (window.__redrawField) window.__redrawField();
+const knob = document.getElementById('knob');
+function applyTheme(mode){ root.setAttribute('data-theme',mode); knob.textContent = mode==='dark'?'☾':'☀';
+  try{localStorage.setItem('ce-theme',mode);}catch(e){} }
+(function(){ let s=null; try{s=localStorage.getItem('ce-theme');}catch(e){}
+  if(!s){ s = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'; }
+  applyTheme(s); })();
+document.getElementById('themeToggle').addEventListener('click',()=>{
+  applyTheme(root.getAttribute('data-theme')==='dark'?'light':'dark');
+  Object.values(simEnsure).forEach(fn=>fn && fn());
 });
-
-/* Helper: legge una variabile CSS corrente */
-function cssVar(name) {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-}
+function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function hexToRgb(hex){ hex=hex.replace('#',''); if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+  const n=parseInt(hex,16); return [(n>>16)&255,(n>>8)&255,n&255]; }
 
 /* ============================================================
-   SIMULAZIONE 1 — CAMPO ELETTRICO (Canvas)
+   NAVIGAZIONE MODULI + SOTTO-SCHEDE
    ============================================================ */
-(function fieldSim() {
-  const canvas = document.getElementById('fieldCanvas');
+const simEnsure = {};          // paneId -> funzione di (ri)dimensionamento sim
+const navBtns = document.querySelectorAll('.nav-btn');
+const modules = document.querySelectorAll('.module');
+
+function showModule(modId){
+  navBtns.forEach(b=>b.classList.toggle('active', b.dataset.mod===modId));
+  modules.forEach(m=>m.classList.toggle('active', m.id===modId));
+  window.scrollTo({top:0,behavior:'smooth'});
+  // attiva la sotto-scheda corrente del modulo (se presente) per far ridimensionare eventuali sim
+  const activeSub = document.querySelector('#'+modId+' .subtab.active');
+  if(activeSub) activateSub(activeSub);
+}
+navBtns.forEach(b=> b.addEventListener('click', ()=> showModule(b.dataset.mod)));
+document.querySelectorAll('.mod-card').forEach(c=> c.addEventListener('click', ()=> showModule(c.dataset.goto)));
+
+function activateSub(tab){
+  const paneId = tab.dataset.sub;
+  const module = tab.closest('.module');
+  module.querySelectorAll('.subtab').forEach(t=>t.classList.toggle('active', t===tab));
+  module.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active', p.id===paneId));
+  if(simEnsure[paneId]) simEnsure[paneId]();
+}
+document.querySelectorAll('.subtab').forEach(tab=> tab.addEventListener('click', ()=> activateSub(tab)));
+
+/* ============================================================
+   SIMULAZIONE — CAMPO ELETTRICO (factory riusabile)
+   ============================================================ */
+function createFieldSim(opts){
+  const canvas = document.getElementById(opts.canvasId);
+  const panel = canvas.closest('.sim-panel');
   const ctx = canvas.getContext('2d');
-  const K = 9000;            // costante scalata per unità arbitrarie
-  const CHARGE_R = 16;       // raggio grafico
-  let charges = [];
-  let dragging = null;
-  let W = 0, H = 0, dpr = 1;
+  const K = 9000, CHARGE_R = 16;
+  let charges = [], dragging=null, W=0,H=0,dpr=1, started=false;
+  const tog = {};
+  panel.querySelectorAll('[data-tog]').forEach(el=>{ tog[el.dataset.tog]=el; el.addEventListener('change',draw); });
 
-  const showLines = document.getElementById('showLines');
-  const showVectors = document.getElementById('showVectors');
-  const showPotential = document.getElementById('showPotential');
-
-  function resize() {
-    const rect = canvas.getBoundingClientRect();
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = rect.width;
-    H = Math.max(320, Math.round(rect.width * 0.6));
-    canvas.style.height = H + 'px';
-    canvas.width = Math.round(W * dpr);
-    canvas.height = Math.round(H * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    // Mantiene le cariche dentro il canvas dopo un ridimensionamento.
-    charges.forEach(c => {
-      c.x = Math.min(Math.max(c.x, CHARGE_R), Math.max(CHARGE_R, W - CHARGE_R));
-      c.y = Math.min(Math.max(c.y, CHARGE_R), Math.max(CHARGE_R, H - CHARGE_R));
-    });
-    draw();
+  function resize(){
+    const rect=canvas.getBoundingClientRect(); if(rect.width===0) return;
+    dpr=Math.min(window.devicePixelRatio||1,2); W=rect.width; H=Math.max(300,Math.round(W*0.6));
+    canvas.style.height=H+'px'; canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    charges.forEach(c=>{ c.x=Math.min(Math.max(c.x,CHARGE_R),Math.max(CHARGE_R,W-CHARGE_R));
+      c.y=Math.min(Math.max(c.y,CHARGE_R),Math.max(CHARGE_R,H-CHARGE_R)); });
   }
+  function fieldAt(x,y){ let ex=0,ey=0; for(const c of charges){ const dx=x-c.x,dy=y-c.y; let r2=dx*dx+dy*dy;
+    if(r2<60)r2=60; const r=Math.sqrt(r2); const e=K*c.q/r2; ex+=e*dx/r; ey+=e*dy/r; } return [ex,ey]; }
+  function potentialAt(x,y){ let v=0; for(const c of charges){ const dx=x-c.x,dy=y-c.y; let r=Math.sqrt(dx*dx+dy*dy);
+    if(r<8)r=8; v+=K*c.q/r; } return v; }
 
-  function fieldAt(x, y) {
-    let ex = 0, ey = 0;
-    for (const c of charges) {
-      const dx = x - c.x, dy = y - c.y;
-      let r2 = dx * dx + dy * dy;
-      if (r2 < 60) r2 = 60;
-      const r = Math.sqrt(r2);
-      const e = K * c.q / r2;
-      ex += e * dx / r;
-      ey += e * dy / r;
+  function drawPotentialMap(){
+    const step=8; let maxAbs=1; for(const c of charges) maxAbs+=Math.abs(K*c.q/30);
+    const P=hexToRgb(cssVar('--pos')), N=hexToRgb(cssVar('--neg'));
+    for(let y=0;y<H;y+=step) for(let x=0;x<W;x+=step){
+      const v=potentialAt(x+step/2,y+step/2); const t=Math.max(-1,Math.min(1,v/(maxAbs*0.5)));
+      const a=Math.min(0.5,Math.abs(t)*0.5); const c=t>=0?P:N;
+      ctx.fillStyle=`rgba(${c[0]},${c[1]},${c[2]},${a})`; ctx.fillRect(x,y,step,step);
     }
-    return [ex, ey];
   }
-
-  function potentialAt(x, y) {
-    let v = 0;
-    for (const c of charges) {
-      const dx = x - c.x, dy = y - c.y;
-      let r = Math.sqrt(dx * dx + dy * dy);
-      if (r < 8) r = 8;
-      v += K * c.q / r;
-    }
-    return v;
-  }
-
-  function drawPotentialMap() {
-    const step = 8;
-    // scala di normalizzazione
-    let maxAbs = 1;
-    for (const c of charges) maxAbs += Math.abs(K * c.q / 30);
-    const posC = hexToRgb(cssVar('--pos'));
-    const negC = hexToRgb(cssVar('--neg'));
-    for (let y = 0; y < H; y += step) {
-      for (let x = 0; x < W; x += step) {
-        const v = potentialAt(x + step/2, y + step/2);
-        const t = Math.max(-1, Math.min(1, v / (maxAbs * 0.5)));
-        let col;
-        const a = Math.min(0.5, Math.abs(t) * 0.5);
-        if (t >= 0) col = `rgba(${posC[0]},${posC[1]},${posC[2]},${a})`;
-        else        col = `rgba(${negC[0]},${negC[1]},${negC[2]},${a})`;
-        ctx.fillStyle = col;
-        ctx.fillRect(x, y, step, step);
+  function drawEquipotential(){
+    if(charges.length===0) return;
+    const step=10, cols=Math.ceil(W/step)+1, rows=Math.ceil(H/step)+1;
+    const grid=[]; let maxAbs=0.0001;
+    for(let j=0;j<rows;j++){ grid[j]=[]; for(let i=0;i<cols;i++){ const v=potentialAt(i*step,j*step);
+      grid[j][i]=v; if(Math.abs(v)>maxAbs) maxAbs=Math.abs(v); } }
+    const levels=[]; for(let k=-4;k<=4;k++){ if(k===0) continue; levels.push(k/5*maxAbs*0.6); }
+    ctx.strokeStyle=cssVar('--muted'); ctx.globalAlpha=0.55; ctx.lineWidth=1;
+    for(const L of levels){ ctx.beginPath();
+      for(let j=0;j<rows-1;j++) for(let i=0;i<cols-1;i++){
+        const a=grid[j][i],b=grid[j][i+1],c=grid[j+1][i+1],d=grid[j+1][i];
+        const x0=i*step,y0=j*step,x1=x0+step,y1=y0+step;
+        const seg=[];
+        if((a<L)!==(b<L)) seg.push([x0+(L-a)/(b-a)*step, y0]);
+        if((b<L)!==(c<L)) seg.push([x1, y0+(L-b)/(c-b)*step]);
+        if((c<L)!==(d<L)) seg.push([x1-(L-c)/(d-c)*step, y1]);
+        if((d<L)!==(a<L)) seg.push([x0, y1-(L-d)/(a-d)*step]);
+        if(seg.length>=2){ ctx.moveTo(seg[0][0],seg[0][1]); ctx.lineTo(seg[1][0],seg[1][1]); }
       }
+      ctx.stroke();
     }
+    ctx.globalAlpha=1;
   }
-
-  function drawFieldVectors() {
-    const grid = 34;
-    ctx.strokeStyle = cssVar('--field-line');
-    ctx.fillStyle = cssVar('--field-line');
-    ctx.globalAlpha = 0.5;
-    for (let y = grid/2; y < H; y += grid) {
-      for (let x = grid/2; x < W; x += grid) {
-        const [ex, ey] = fieldAt(x, y);
-        const mag = Math.hypot(ex, ey);
-        if (mag < 1e-6) continue;
-        const len = Math.min(14, 4 + Math.log(1 + mag) * 2.2);
-        const ux = ex / mag, uy = ey / mag;
-        const x2 = x + ux * len, y2 = y + uy * len;
-        ctx.beginPath();
-        ctx.moveTo(x - ux * len, y - uy * len);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-        // punta
-        ctx.beginPath();
-        ctx.moveTo(x2, y2);
-        ctx.lineTo(x2 - uy * 3 - ux * 4, y2 + ux * 3 - uy * 4);
-        ctx.lineTo(x2 + uy * 3 - ux * 4, y2 - ux * 3 - uy * 4);
-        ctx.closePath();
-        ctx.fill();
-      }
+  function drawVectors(){
+    const grid=34; ctx.strokeStyle=cssVar('--field-line'); ctx.fillStyle=cssVar('--field-line'); ctx.globalAlpha=0.5;
+    for(let y=grid/2;y<H;y+=grid) for(let x=grid/2;x<W;x+=grid){
+      const [ex,ey]=fieldAt(x,y); const mag=Math.hypot(ex,ey); if(mag<1e-6) continue;
+      const len=Math.min(14,4+Math.log(1+mag)*2.2); const ux=ex/mag,uy=ey/mag; const x2=x+ux*len,y2=y+uy*len;
+      ctx.beginPath(); ctx.moveTo(x-ux*len,y-uy*len); ctx.lineTo(x2,y2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-uy*3-ux*4,y2+ux*3-uy*4); ctx.lineTo(x2+uy*3-ux*4,y2-ux*3-uy*4);
+      ctx.closePath(); ctx.fill();
     }
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha=1;
   }
-
-  function traceLine(sx, sy, dir) {
-    // dir = +1 esce (da positiva), -1 entra (verso negativa)
-    ctx.beginPath();
-    ctx.moveTo(sx, sy);
-    let x = sx, y = sy;
-    const stepLen = 4;
-    for (let i = 0; i < 500; i++) {
-      const [ex, ey] = fieldAt(x, y);
-      const mag = Math.hypot(ex, ey);
-      if (mag < 1e-9) break;
-      x += dir * stepLen * ex / mag;
-      y += dir * stepLen * ey / mag;
-      if (x < -20 || x > W + 20 || y < -20 || y > H + 20) break;
-      // stop se molto vicino a una carica di segno opposto
-      let stop = false;
-      for (const c of charges) {
-        const d = Math.hypot(x - c.x, y - c.y);
-        if (d < CHARGE_R + 3) { stop = true; break; }
-      }
-      ctx.lineTo(x, y);
-      if (stop) break;
-    }
+  function traceLine(sx,sy,dir){
+    ctx.beginPath(); ctx.moveTo(sx,sy); let x=sx,y=sy; const s=4;
+    for(let i=0;i<500;i++){ const [ex,ey]=fieldAt(x,y); const mag=Math.hypot(ex,ey); if(mag<1e-9) break;
+      x+=dir*s*ex/mag; y+=dir*s*ey/mag; if(x<-20||x>W+20||y<-20||y>H+20) break;
+      let stop=false; for(const c of charges){ if(Math.hypot(x-c.x,y-c.y)<CHARGE_R+3){stop=true;break;} }
+      ctx.lineTo(x,y); if(stop) break; }
     ctx.stroke();
   }
-
-  function drawFieldLines() {
-    ctx.strokeStyle = cssVar('--field-line');
-    ctx.lineWidth = 1.4;
-    ctx.globalAlpha = 0.9;
-    for (const c of charges) {
-      if (c.q === 0) continue;
-      const nLines = 12;
-      for (let i = 0; i < nLines; i++) {
-        const ang = (i / nLines) * Math.PI * 2 + 0.001;
-        const sx = c.x + Math.cos(ang) * (CHARGE_R + 1);
-        const sy = c.y + Math.sin(ang) * (CHARGE_R + 1);
-        traceLine(sx, sy, c.q > 0 ? 1 : -1);
-      }
-    }
-    ctx.globalAlpha = 1;
+  function drawLines(){
+    ctx.strokeStyle=cssVar('--field-line'); ctx.lineWidth=1.4; ctx.globalAlpha=0.9;
+    for(const c of charges){ if(c.q===0) continue; const n=12;
+      for(let i=0;i<n;i++){ const a=i/n*Math.PI*2+0.001; const sx=c.x+Math.cos(a)*(CHARGE_R+1), sy=c.y+Math.sin(a)*(CHARGE_R+1);
+        traceLine(sx,sy,c.q>0?1:-1); } }
+    ctx.globalAlpha=1;
   }
-
-  function drawCharges() {
-    for (const c of charges) {
-      const col = c.q > 0 ? cssVar('--pos') : cssVar('--neg');
-      // alone
-      ctx.beginPath();
-      ctx.arc(c.x, c.y, CHARGE_R + 6, 0, Math.PI * 2);
-      ctx.fillStyle = (c.q > 0 ? cssVar('--pos-soft') : cssVar('--neg-soft'));
-      ctx.fill();
-      // corpo
-      ctx.beginPath();
-      ctx.arc(c.x, c.y, CHARGE_R, 0, Math.PI * 2);
-      ctx.fillStyle = col;
-      ctx.fill();
-      // simbolo
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 20px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(c.q > 0 ? '+' : '−', c.x, c.y + 1);
-    }
+  function drawCharges(){
+    for(const c of charges){ const col=c.q>0?cssVar('--pos'):cssVar('--neg');
+      ctx.beginPath(); ctx.arc(c.x,c.y,CHARGE_R+6,0,Math.PI*2); ctx.fillStyle=c.q>0?cssVar('--pos-soft'):cssVar('--neg-soft'); ctx.fill();
+      ctx.beginPath(); ctx.arc(c.x,c.y,CHARGE_R,0,Math.PI*2); ctx.fillStyle=col; ctx.fill();
+      ctx.fillStyle='#fff'; ctx.font='bold 20px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(c.q>0?'+':'−',c.x,c.y+1); }
   }
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    if (showPotential.checked) drawPotentialMap();
-    if (showLines.checked) drawFieldLines();
-    if (showVectors.checked) drawFieldVectors();
+  function draw(){
+    if(W===0) return; ctx.clearRect(0,0,W,H);
+    if(tog.potential && tog.potential.checked) drawPotentialMap();
+    if(tog.equipotential && tog.equipotential.checked) drawEquipotential();
+    if(tog.lines && tog.lines.checked) drawLines();
+    if(tog.vectors && tog.vectors.checked) drawVectors();
     drawCharges();
   }
-  window.__redrawField = draw;
 
-  /* Interazione trascinamento */
-  function pointerPos(e) {
-    const rect = canvas.getBoundingClientRect();
-    const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-    const cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-    return [cx, cy];
-  }
-  function findCharge(x, y) {
-    for (let i = charges.length - 1; i >= 0; i--) {
-      if (Math.hypot(x - charges[i].x, y - charges[i].y) < CHARGE_R + 6) return charges[i];
-    }
-    return null;
-  }
-  canvas.addEventListener('pointerdown', e => {
-    const [x, y] = pointerPos(e);
-    dragging = findCharge(x, y);
-    if (dragging) canvas.setPointerCapture(e.pointerId);
-  });
-  canvas.addEventListener('pointermove', e => {
-    if (!dragging) return;
-    const [x, y] = pointerPos(e);
-    dragging.x = Math.max(CHARGE_R, Math.min(W - CHARGE_R, x));
-    dragging.y = Math.max(CHARGE_R, Math.min(H - CHARGE_R, y));
-    draw();
-  });
-  canvas.addEventListener('pointerup', () => { dragging = null; });
-  canvas.addEventListener('pointercancel', () => { dragging = null; });
+  function pointerPos(e){ const r=canvas.getBoundingClientRect();
+    return [ (e.clientX)-r.left, (e.clientY)-r.top ]; }
+  function findCharge(x,y){ for(let i=charges.length-1;i>=0;i--) if(Math.hypot(x-charges[i].x,y-charges[i].y)<CHARGE_R+6) return charges[i]; return null; }
+  canvas.addEventListener('pointerdown',e=>{ const [x,y]=pointerPos(e); dragging=findCharge(x,y); if(dragging) canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointermove',e=>{ if(!dragging) return; const [x,y]=pointerPos(e);
+    dragging.x=Math.max(CHARGE_R,Math.min(W-CHARGE_R,x)); dragging.y=Math.max(CHARGE_R,Math.min(H-CHARGE_R,y)); draw(); });
+  canvas.addEventListener('pointerup',()=>{dragging=null;});
+  canvas.addEventListener('pointercancel',()=>{dragging=null;});
 
-  /* Pulsanti */
-  function addCharge(q) {
-    charges.push({ x: W * (0.3 + Math.random() * 0.4), y: H * (0.3 + Math.random() * 0.4), q });
-    draw();
-  }
-  document.getElementById('addPos').onclick = () => addCharge(1);
-  document.getElementById('addNeg').onclick = () => addCharge(-1);
-  document.getElementById('clearCharges').onclick = () => { charges = []; draw(); };
-  document.getElementById('presetDipole').onclick = () => {
-    charges = [{ x: W * 0.38, y: H * 0.5, q: 1 }, { x: W * 0.62, y: H * 0.5, q: -1 }];
-    draw();
-  };
-  document.getElementById('presetTwoPos').onclick = () => {
-    charges = [{ x: W * 0.38, y: H * 0.5, q: 1 }, { x: W * 0.62, y: H * 0.5, q: 1 }];
-    draw();
-  };
-  [showLines, showVectors, showPotential].forEach(cb => cb.addEventListener('change', draw));
+  function addCharge(q){ charges.push({x:W*(0.3+Math.random()*0.4),y:H*(0.3+Math.random()*0.4),q}); draw(); }
+  panel.querySelectorAll('[data-act]').forEach(b=> b.addEventListener('click',()=>{
+    const a=b.dataset.act;
+    if(a==='addPos') addCharge(1);
+    else if(a==='addNeg') addCharge(-1);
+    else if(a==='clear'){ charges=[]; draw(); }
+    else if(a==='dipole'){ charges=[{x:W*0.38,y:H*0.5,q:1},{x:W*0.62,y:H*0.5,q:-1}]; draw(); }
+    else if(a==='twoPos'){ charges=[{x:W*0.38,y:H*0.5,q:1},{x:W*0.62,y:H*0.5,q:1}]; draw(); }
+  }));
 
-  let started = false;
-  function ensure() {
-    resize();
-    if (!started && W > 0) {
-      started = true;
-      charges = [{ x: W * 0.38, y: H * 0.5, q: 1 }, { x: W * 0.62, y: H * 0.5, q: -1 }];
-    }
-    draw();
-  }
-  window.__fieldEnsure = ensure;
-  window.addEventListener('resize', () => { resize(); });
-  // init (nel caso la sezione fosse già visibile all'avvio)
-  setTimeout(ensure, 60);
-})();
-
-/* Utility: hex -> rgb */
-function hexToRgb(hex) {
-  hex = hex.replace('#', '');
-  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
-  const n = parseInt(hex, 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  function ensure(){ resize(); if(!started && W>0){ started=true;
+      charges = opts.preset==='dipole' ? [{x:W*0.38,y:H*0.5,q:1},{x:W*0.62,y:H*0.5,q:-1}] : charges; }
+    draw(); }
+  window.addEventListener('resize',()=>{ resize(); draw(); });
+  simEnsure[opts.paneId]=ensure;
+  return ensure;
 }
+createFieldSim({ canvasId:'fieldCanvas1', paneId:'m1-sim', preset:'dipole' });
+createFieldSim({ canvasId:'fieldCanvas2', paneId:'m2-sim', preset:'dipole' });
 
 /* ============================================================
-   SIMULAZIONE 2 — CIRCUITO (Canvas + strumenti)
+   SIMULAZIONE — TEOREMA DI GAUSS
    ============================================================ */
-(function circuitSim() {
-  const canvas = document.getElementById('circuitCanvas');
-  const ctx = canvas.getContext('2d');
-  let W = 0, H = 0, dpr = 1;
-
-  const emf = document.getElementById('emf');
-  const rint = document.getElementById('rint');
-  const r1 = document.getElementById('r1');
-  const r2 = document.getElementById('r2');
-  const topoSeries = document.getElementById('topoSeries');
-  const topoParallel = document.getElementById('topoParallel');
-
-  const emfVal = document.getElementById('emfVal');
-  const rintVal = document.getElementById('rintVal');
-  const r1Val = document.getElementById('r1Val');
-  const r2Val = document.getElementById('r2Val');
-
-  const mReq = document.getElementById('mReq');
-  const mI = document.getElementById('mI');
-  const mV = document.getElementById('mV');
-  const mP = document.getElementById('mP');
-
-  let electrons = [];
-  let current = 0;      // A (corrente totale)
-  let isParallel = false;
-  let iTotal = 0, iB1 = 0, iB2 = 0;   // correnti: totale e nei due rami
-
-  function computeState() {
-    const E = parseFloat(emf.value);
-    const r = parseFloat(rint.value);
-    const R1 = parseFloat(r1.value);
-    const R2 = parseFloat(r2.value);
-    let Req;
-    if (topoParallel.checked) Req = (R1 * R2) / (R1 + R2);
-    else Req = R1 + R2;
-    const i = E / (Req + r);              // A
-    const Vterm = E - r * i;              // tensione ai morsetti
-    const P = i * i * Req;                // potenza sul carico
-    current = i;
-    iTotal = i;
-    if (topoParallel.checked) {
-      const Vpar = i * Req;               // tensione ai capi del parallelo
-      iB1 = Vpar / R1;                    // corrente nel ramo R1
-      iB2 = Vpar / R2;                    // corrente nel ramo R2
-    } else {
-      iB1 = iB2 = i;                      // in serie la stessa corrente ovunque
+(function gaussSim(){
+  const canvas=document.getElementById('gaussCanvas'); const ctx=canvas.getContext('2d');
+  let W=0,H=0,dpr=1;
+  const qS=document.getElementById('gaussQ'), rS=document.getElementById('gaussR');
+  const qV=document.getElementById('gaussQVal'), rV=document.getElementById('gaussRVal');
+  const eOut=document.getElementById('gaussE'), fOut=document.getElementById('gaussFlux');
+  function resize(){ const rect=canvas.getBoundingClientRect(); if(rect.width===0) return;
+    dpr=Math.min(window.devicePixelRatio||1,2); W=rect.width; H=Math.max(240,Math.round(W*0.5));
+    canvas.style.height=H+'px'; canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
+  function draw(){
+    if(W===0) return; ctx.clearRect(0,0,W,H);
+    const Q=parseFloat(qS.value), rel=parseFloat(rS.value);
+    const cx=W/2, cy=H/2, baseR=Math.min(W,H)*0.16, R=baseR*rel;
+    qV.textContent=(Q>=0?'+':'')+Q.toFixed(1)+' nC'; rV.textContent=rel.toFixed(2)+' (rel.)';
+    // superficie gaussiana
+    ctx.setLineDash([6,5]); ctx.strokeStyle=cssVar('--accent'); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+    // frecce del campo sulla superficie (verso uscente se Q>0)
+    const n=16; const Emag=Q/(rel*rel); const arrow=Math.min(26,Math.max(4,Math.abs(Emag)*4));
+    ctx.strokeStyle=cssVar('--e-color'); ctx.fillStyle=cssVar('--e-color');
+    for(let i=0;i<n;i++){ const a=i/n*Math.PI*2; const ex=Math.cos(a),ey=Math.sin(a);
+      const dir=Q>=0?1:-1; const x0=cx+ex*R, y0=cy+ey*R; const x1=x0+dir*ex*arrow, y1=y0+dir*ey*arrow;
+      if(Math.abs(Q)<0.01) continue;
+      ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.lineWidth=2; ctx.stroke();
+      const hx=dir*ex, hy=dir*ey;
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1-hx*6-hy*4, y1-hy*6+hx*4); ctx.lineTo(x1-hx*6+hy*4, y1-hy*6-hx*4); ctx.closePath(); ctx.fill();
     }
-    // Se la topologia è cambiata, ricostruisci geometria ed elettroni
-    if (topoParallel.checked !== builtParallel) {
-      isParallel = topoParallel.checked;
-      rebuildGeometry();
-    }
-
-    emfVal.textContent = E.toFixed(1) + ' V';
-    rintVal.textContent = r.toFixed(1) + ' Ω';
-    r1Val.textContent = R1.toFixed(0) + ' Ω';
-    r2Val.textContent = R2.toFixed(0) + ' Ω';
-
-    mReq.textContent = Req.toFixed(1);
-    mI.textContent = (i * 1000).toFixed(1) + ' mA';
-    mV.textContent = Vterm.toFixed(2) + ' V';
-    mP.textContent = (P >= 1 ? P.toFixed(2) + ' W' : (P * 1000).toFixed(0) + ' mW');
+    // carica centrale
+    const col=Q>=0?cssVar('--pos'):(Q<0?cssVar('--neg'):cssVar('--muted'));
+    ctx.beginPath(); ctx.arc(cx,cy,15,0,Math.PI*2); ctx.fillStyle=Math.abs(Q)<0.01?cssVar('--muted'):col; ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='bold 20px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(Q>0?'+':(Q<0?'−':'0'),cx,cy+1);
+    // meter
+    eOut.textContent = Math.abs(Q)<0.01 ? '0' : (Math.abs(Emag)).toFixed(1);
+    const flux = Q*1e-9/8.854e-12;
+    fOut.textContent = (flux>=0?'':'−')+Math.abs(flux).toFixed(0);
   }
-
-  // ----- Geometria del circuito (dipende dalla topologia) -----
-  let geo = null;            // nodi principali del disegno
-  let loops = [];            // percorsi chiusi seguiti dagli elettroni
-  let builtParallel = null;  // topologia con cui è stata costruita la geometria
-
-  function polyLen(pts) {
-    let L = 0;
-    for (let i = 0; i < pts.length - 1; i++) L += Math.hypot(pts[i+1].x - pts[i].x, pts[i+1].y - pts[i].y);
-    return L;
-  }
-  function posOnLoop(loop, t) {
-    let d = (((t % 1) + 1) % 1) * loop.len;
-    const pts = loop.pts;
-    for (let i = 0; i < pts.length - 1; i++) {
-      const seg = Math.hypot(pts[i+1].x - pts[i].x, pts[i+1].y - pts[i].y);
-      if (d <= seg) {
-        const f = seg === 0 ? 0 : d / seg;
-        return { x: pts[i].x + (pts[i+1].x - pts[i].x) * f, y: pts[i].y + (pts[i+1].y - pts[i].y) * f };
-      }
-      d -= seg;
-    }
-    return pts[pts.length - 1];
-  }
-
-  function buildGeometry() {
-    const m = 46;
-    const x0 = m, y0 = m, x1 = W - m, y1 = H - m;
-    const xA = x0 + (x1 - x0) * 0.34;   // nodo di sinistra (biforcazione)
-    const xB = x0 + (x1 - x0) * 0.66;   // nodo di destra (ricongiungimento)
-    const d = Math.min(30, (y1 - y0) * 0.18);
-    geo = { x0, y0, x1, y1, xA, xB, d };
-    // Tratto comune: dal nodo B, giro esterno (destra, basso, sinistra con la pila) fino al nodo A
-    const trunk = [
-      { x: xB, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 },
-      { x: x0, y: y1 }, { x: x0, y: y0 }, { x: xA, y: y0 }
-    ];
-    loops = [];
-    if (isParallel) {
-      // due rami A→B, uno sopra (R1) e uno sotto (R2)
-      const up = [{ x: xA, y: y0 - d }, { x: xB, y: y0 - d }, { x: xB, y: y0 }];
-      const lo = [{ x: xA, y: y0 + d }, { x: xB, y: y0 + d }, { x: xB, y: y0 }];
-      loops.push({ pts: trunk.concat(up), ref: 'b1' });
-      loops.push({ pts: trunk.concat(lo), ref: 'b2' });
-    } else {
-      // ramo unico dritto A→B (i due resistori in linea)
-      loops.push({ pts: trunk.concat([{ x: xB, y: y0 }]), ref: 'total' });
-    }
-    loops.forEach(L => { L.len = polyLen(L.pts); });
-  }
-
-  function initElectrons() {
-    electrons = [];
-    const per = isParallel ? 13 : 24;
-    loops.forEach((L, li) => { for (let k = 0; k < per; k++) electrons.push({ loop: li, t: k / per }); });
-  }
-
-  function rebuildGeometry() {
-    buildGeometry();
-    initElectrons();
-    builtParallel = isParallel;
-  }
-
-  function resize() {
-    const rect = canvas.getBoundingClientRect();
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = rect.width;
-    H = Math.max(240, Math.round(rect.width * 0.52));
-    canvas.style.height = H + 'px';
-    canvas.width = Math.round(W * dpr);
-    canvas.height = Math.round(H * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    isParallel = topoParallel.checked;
-    rebuildGeometry();
-  }
-
-  function drawBattery(x, y) {
-    // simbolo generatore sul lato sinistro
-    ctx.save();
-    ctx.strokeStyle = cssVar('--text');
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(x - 12, y - 14); ctx.lineTo(x + 12, y - 14); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(x - 7, y - 2); ctx.lineTo(x + 7, y - 2); ctx.stroke();
-    ctx.fillStyle = cssVar('--pos');
-    ctx.font = 'bold 13px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('+', x + 20, y - 12);
-    ctx.fillStyle = cssVar('--neg');
-    ctx.fillText('−', x + 20, y + 3);
-    ctx.restore();
-  }
-
-  function drawResistor(cx, cy, label, color) {
-    ctx.save();
-    ctx.fillStyle = color;
-    ctx.strokeStyle = cssVar('--text');
-    ctx.lineWidth = 1.4;
-    ctx.beginPath();
-    ctx.roundRect(cx - 26, cy - 11, 52, 22, 5);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 12px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(label, cx, cy);
-    ctx.restore();
-  }
-
-  function wire(pts) {
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-    ctx.stroke();
-  }
-  function node(x, y) {
-    ctx.beginPath();
-    ctx.arc(x, y, 4.5, 0, Math.PI * 2);
-    ctx.fillStyle = cssVar('--wire');
-    ctx.fill();
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    if (!geo) return;
-    const { x0, y0, x1, y1, xA, xB, d } = geo;
-
-    ctx.strokeStyle = cssVar('--wire');
-    ctx.lineWidth = 4;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-
-    // tratto esterno comune (con la pila sul lato sinistro)
-    wire([{ x: xB, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }, { x: x0, y: y0 }, { x: xA, y: y0 }]);
-
-    if (isParallel) {
-      // sbarre verticali ai nodi e i due rami orizzontali
-      wire([{ x: xA, y: y0 - d }, { x: xA, y: y0 + d }]);
-      wire([{ x: xB, y: y0 - d }, { x: xB, y: y0 + d }]);
-      wire([{ x: xA, y: y0 - d }, { x: xB, y: y0 - d }]);
-      wire([{ x: xA, y: y0 + d }, { x: xB, y: y0 + d }]);
-      node(xA, y0); node(xB, y0);
-      drawResistor((xA + xB) / 2, y0 - d, 'R₁', cssVar('--accent'));
-      drawResistor((xA + xB) / 2, y0 + d, 'R₂', cssVar('--pos'));
-      ctx.fillStyle = cssVar('--muted');
-      ctx.font = '12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('R₁ ∥ R₂  (in parallelo)', (xA + xB) / 2, y0 + d + 24);
-      // correnti di ramo
-      ctx.fillStyle = cssVar('--i-color');
-      ctx.font = '11px sans-serif';
-      ctx.fillText((iB1 * 1000).toFixed(0) + ' mA', (xA + xB) / 2, y0 - d - 18);
-      ctx.fillText((iB2 * 1000).toFixed(0) + ' mA', (xA + xB) / 2 + 66, y0 + d - 16);
-    } else {
-      wire([{ x: xA, y: y0 }, { x: xB, y: y0 }]);
-      drawResistor(xA + (xB - xA) * 0.30, y0, 'R₁', cssVar('--accent'));
-      drawResistor(xA + (xB - xA) * 0.70, y0, 'R₂', cssVar('--pos'));
-      ctx.fillStyle = cssVar('--muted');
-      ctx.font = '12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('R₁ — R₂  (in serie)', (xA + xB) / 2, y0 - 22);
-    }
-
-    drawBattery(x0, (y0 + y1) / 2);
-
-    // etichetta corrente totale (lato destro)
-    ctx.fillStyle = cssVar('--i-color');
-    ctx.font = 'bold 13px sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText('i = ' + (current * 1000).toFixed(0) + ' mA', x1 - 12, (y0 + y1) / 2 - 8);
-
-    // elettroni
-    ctx.fillStyle = cssVar('--electron');
-    for (const el of electrons) {
-      const L = loops[el.loop];
-      if (!L) continue;
-      const p = posOnLoop(L, el.t);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 3.4, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
-  let last = performance.now();
-  function loop(now) {
-    const dt = Math.min(0.05, (now - last) / 1000);
-    last = now;
-    // gli elettroni si muovono in verso opposto alla corrente convenzionale;
-    // la velocità è proporzionale alla corrente del ramo che percorrono
-    for (const el of electrons) {
-      const L = loops[el.loop];
-      if (!L) continue;
-      const iref = L.ref === 'b1' ? iB1 : (L.ref === 'b2' ? iB2 : iTotal);
-      const pxPerSec = Math.min(300, iref * 680);
-      const rate = L.len > 0 ? pxPerSec / L.len : 0;
-      el.t = (((el.t - rate * dt) % 1) + 1) % 1;
-    }
-    draw();
-    requestAnimationFrame(loop);
-  }
-
-  [emf, rint, r1, r2].forEach(s => s.addEventListener('input', computeState));
-  [topoSeries, topoParallel].forEach(r => r.addEventListener('change', computeState));
-  window.__circuitResize = () => { resize(); };
-  window.addEventListener('resize', () => { resize(); draw(); });
-
-  setTimeout(() => {
-    resize();
-    initElectrons();
-    computeState();
-    requestAnimationFrame(loop);
-  }, 60);
+  [qS,rS].forEach(s=>s.addEventListener('input',draw));
+  window.addEventListener('resize',()=>{resize();draw();});
+  simEnsure['m2-sim'] = (function(prev){ return function(){ if(prev) prev(); resize(); draw(); }; })(simEnsure['m2-sim']);
 })();
 
 /* ============================================================
-   ESERCIZI GUIDATI
+   SIMULAZIONE — LEGGE DI OHM
    ============================================================ */
-const exercises = [
-  {
-    diff: 'base', diffLabel: 'Base',
-    title: 'Forza di Coulomb tra due cariche',
-    text: 'Due cariche puntiformi \\(q_1 = 2{,}0\\ \\mu\\mathrm{C}\\) e \\(q_2 = 3{,}0\\ \\mu\\mathrm{C}\\) si trovano nel vuoto a distanza \\(r = 0{,}20\\ \\mathrm{m}\\). Calcola l\'intensità della forza elettrica (in newton).',
-    hints: [
-      'Usa la legge di Coulomb: \\(F = k\\,\\dfrac{|q_1 q_2|}{r^2}\\), con \\(k = 8{,}99\\times10^9\\ \\mathrm{N\\,m^2/C^2}\\).',
-      'Ricorda che \\(1\\ \\mu\\mathrm{C} = 10^{-6}\\ \\mathrm{C}\\), quindi \\(q_1 q_2 = 2{,}0\\times10^{-6}\\cdot 3{,}0\\times10^{-6} = 6{,}0\\times10^{-12}\\ \\mathrm{C^2}\\).',
-      'Il denominatore è \\(r^2 = (0{,}20)^2 = 0{,}040\\ \\mathrm{m^2}\\). Quindi \\(F = 8{,}99\\times10^9 \\cdot \\dfrac{6{,}0\\times10^{-12}}{0{,}040}\\).'
-    ],
-    answer: 1.35, tol: 0.08, unit: 'N',
-    solution: '\\(F = 8{,}99\\times10^9 \\cdot \\dfrac{6{,}0\\times10^{-12}}{0{,}040} \\approx 1{,}35\\ \\mathrm{N}\\). Essendo entrambe positive, la forza è repulsiva.'
-  },
-  {
-    diff: 'base', diffLabel: 'Base',
-    title: 'Campo di una carica puntiforme',
-    text: 'Qual è l\'intensità del campo elettrico (in N/C) generato da una carica \\(Q = 5{,}0\\ \\mathrm{nC}\\) a distanza \\(r = 0{,}10\\ \\mathrm{m}\\)?',
-    hints: [
-      'Il campo di una carica puntiforme è \\(E = k\\,\\dfrac{|Q|}{r^2}\\).',
-      '\\(1\\ \\mathrm{nC} = 10^{-9}\\ \\mathrm{C}\\), quindi \\(Q = 5{,}0\\times10^{-9}\\ \\mathrm{C}\\) e \\(r^2 = 0{,}010\\ \\mathrm{m^2}\\).'
-    ],
-    answer: 4495, tol: 200, unit: 'N/C',
-    solution: '\\(E = 8{,}99\\times10^9 \\cdot \\dfrac{5{,}0\\times10^{-9}}{0{,}010} \\approx 4{,}5\\times10^3\\ \\mathrm{N/C}\\).'
-  },
-  {
-    diff: 'medio', diffLabel: 'Medio',
-    title: 'Prima legge di Ohm',
-    text: 'Un resistore è attraversato da una corrente \\(i = 0{,}25\\ \\mathrm{A}\\) quando ai suoi capi c\'è una tensione \\(V = 5{,}0\\ \\mathrm{V}\\). Quanto vale la sua resistenza (in ohm)?',
-    hints: [
-      'La prima legge di Ohm lega tensione, corrente e resistenza: \\(V = R\\,i\\).',
-      'Isola \\(R\\): \\(R = \\dfrac{V}{i}\\).'
-    ],
-    answer: 20, tol: 0.5, unit: 'Ω',
-    solution: '\\(R = \\dfrac{V}{i} = \\dfrac{5{,}0}{0{,}25} = 20\\ \\Omega\\).'
-  },
-  {
-    diff: 'medio', diffLabel: 'Medio',
-    title: 'Resistori in parallelo',
-    text: 'Due resistori \\(R_1 = 6{,}0\\ \\Omega\\) e \\(R_2 = 3{,}0\\ \\Omega\\) sono collegati in parallelo. Quanto vale la resistenza equivalente (in ohm)?',
-    hints: [
-      'In parallelo: \\(\\dfrac{1}{R_{eq}} = \\dfrac{1}{R_1} + \\dfrac{1}{R_2}\\).',
-      'Per due soli resistori vale la formula pratica \\(R_{eq} = \\dfrac{R_1 R_2}{R_1 + R_2}\\).',
-      'Sostituisci: \\(R_{eq} = \\dfrac{6{,}0\\cdot 3{,}0}{6{,}0 + 3{,}0} = \\dfrac{18}{9}\\).'
-    ],
-    answer: 2, tol: 0.1, unit: 'Ω',
-    solution: '\\(R_{eq} = \\dfrac{18}{9} = 2{,}0\\ \\Omega\\). Nota che è minore del resistore più piccolo (3,0 Ω), come sempre in parallelo.'
-  },
-  {
-    diff: 'medio', diffLabel: 'Medio',
-    title: 'Potenza dissipata (effetto Joule)',
-    text: 'Un resistore da \\(R = 100\\ \\Omega\\) è attraversato da una corrente \\(i = 0{,}30\\ \\mathrm{A}\\). Quanta potenza dissipa (in watt)?',
-    hints: [
-      'Conoscendo \\(R\\) e \\(i\\), conviene la forma \\(P = R\\,i^2\\).',
-      'Calcola \\(i^2 = (0{,}30)^2 = 0{,}09\\ \\mathrm{A^2}\\), poi moltiplica per \\(R\\).'
-    ],
-    answer: 9, tol: 0.3, unit: 'W',
-    solution: '\\(P = R\\,i^2 = 100 \\cdot 0{,}09 = 9{,}0\\ \\mathrm{W}\\), interamente convertiti in calore.'
-  },
-  {
-    diff: 'avanz', diffLabel: 'Avanzato',
-    title: 'Generatore reale con resistenza interna',
-    text: 'Una batteria di f.e.m. \\(\\varepsilon = 12\\ \\mathrm{V}\\) e resistenza interna \\(r = 0{,}50\\ \\Omega\\) alimenta un resistore \\(R = 5{,}5\\ \\Omega\\). Calcola la corrente nel circuito (in ampere).',
-    hints: [
-      'Il generatore reale "vede" in totale \\(R + r\\). La legge di Ohm generalizzata dà \\(i = \\dfrac{\\varepsilon}{R + r}\\).',
-      'Somma prima le resistenze: \\(R + r = 5{,}5 + 0{,}50 = 6{,}0\\ \\Omega\\).',
-      'Quindi \\(i = \\dfrac{12}{6{,}0}\\).'
-    ],
-    answer: 2, tol: 0.05, unit: 'A',
-    solution: '\\(i = \\dfrac{12}{6{,}0} = 2{,}0\\ \\mathrm{A}\\). La tensione ai morsetti è \\(V = \\varepsilon - r\\,i = 12 - 0{,}50\\cdot 2{,}0 = 11\\ \\mathrm{V}\\).'
-  },
-  {
-    diff: 'avanz', diffLabel: 'Avanzato',
-    title: 'Seconda legge di Ohm',
-    text: 'Un filo di rame (\\(\\rho = 1{,}7\\times10^{-8}\\ \\Omega\\cdot\\mathrm{m}\\)) è lungo \\(\\ell = 20\\ \\mathrm{m}\\) e ha sezione \\(A = 1{,}0\\ \\mathrm{mm^2}\\). Calcola la sua resistenza (in ohm).',
-    hints: [
-      'Seconda legge di Ohm: \\(R = \\rho\\,\\dfrac{\\ell}{A}\\).',
-      'Attenzione alle unità: \\(1{,}0\\ \\mathrm{mm^2} = 1{,}0\\times10^{-6}\\ \\mathrm{m^2}\\).',
-      'Sostituisci: \\(R = 1{,}7\\times10^{-8}\\cdot \\dfrac{20}{1{,}0\\times10^{-6}}\\).'
-    ],
-    answer: 0.34, tol: 0.02, unit: 'Ω',
-    solution: '\\(R = 1{,}7\\times10^{-8}\\cdot \\dfrac{20}{1{,}0\\times10^{-6}} = 0{,}34\\ \\Omega\\).'
+(function ohmSim(){
+  const canvas=document.getElementById('ohmCanvas'); const ctx=canvas.getContext('2d');
+  let W=0,H=0,dpr=1, electrons=[], current=0;
+  const vS=document.getElementById('ohmV'), rS=document.getElementById('ohmR');
+  const vV=document.getElementById('ohmVVal'), rV=document.getElementById('ohmRVal');
+  const iOut=document.getElementById('ohmI'), pOut=document.getElementById('ohmP');
+  function resize(){ const rect=canvas.getBoundingClientRect(); if(rect.width===0) return;
+    dpr=Math.min(window.devicePixelRatio||1,2); W=rect.width; H=Math.max(220,Math.round(W*0.42));
+    canvas.style.height=H+'px'; canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);
+    if(electrons.length===0){ for(let i=0;i<40;i++) electrons.push({t:Math.random(), lane:Math.floor(Math.random()*3)}); } }
+  function compute(){ const V=parseFloat(vS.value), R=parseFloat(rS.value); const i=V/R; const P=V*i;
+    current=i; vV.textContent=V.toFixed(1)+' V'; rV.textContent=R.toFixed(0)+' Ω';
+    iOut.textContent=(i*1000).toFixed(0)+' mA'; pOut.textContent=(P>=1?P.toFixed(2)+' W':(P*1000).toFixed(0)+' mW'); }
+  const condX0=()=>W*0.10, condX1=()=>W*0.66, condY=()=>H*0.42, condH=()=>Math.max(30,H*0.22);
+  function draw(){
+    if(W===0) return; ctx.clearRect(0,0,W,H);
+    const x0=condX0(),x1=condX1(),y=condY(),h=condH();
+    const V=parseFloat(vS.value), P=V*current;
+    // bagliore (effetto Joule) proporzionale alla potenza
+    const glow=Math.min(0.6, P/8);
+    ctx.fillStyle=`rgba(${hexToRgb(cssVar('--pos')).join(',')},${glow})`;
+    ctx.fillRect(x0-6,y-h/2-6,(x1-x0)+12,h+12);
+    // conduttore
+    ctx.fillStyle=cssVar('--surface-2'); ctx.strokeStyle=cssVar('--wire'); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.rect(x0,y-h/2,x1-x0,h); ctx.fill(); ctx.stroke();
+    // terminali / generatore
+    ctx.strokeStyle=cssVar('--wire'); ctx.lineWidth=4; ctx.beginPath();
+    ctx.moveTo(x0,y); ctx.lineTo(x0-W*0.05,y); ctx.moveTo(x1,y); ctx.lineTo(x1+W*0.05,y); ctx.stroke();
+    ctx.fillStyle=cssVar('--pos'); ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('+',x1+W*0.05+8,y-6); ctx.fillStyle=cssVar('--neg'); ctx.fillText('−',x0-W*0.05-8,y-6);
+    // elettroni dentro il conduttore
+    ctx.fillStyle=cssVar('--electron');
+    for(const el of electrons){ const ex=x0+ (1-el.t)*(x1-x0); const ey=y-h/2+ (h/(3))*(el.lane+0.5);
+      ctx.beginPath(); ctx.arc(ex,ey,3,0,Math.PI*2); ctx.fill(); }
+    // etichette
+    ctx.fillStyle=cssVar('--i-color'); ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('i = '+(current*1000).toFixed(0)+' mA',(x0+x1)/2, y-h/2-16);
+    ctx.fillStyle=cssVar('--muted'); ctx.font='12px sans-serif';
+    ctx.fillText('conduttore (resistenza R)',(x0+x1)/2, y+h/2+18);
+    // mini grafico V-I
+    drawGraph();
   }
-];
+  function drawGraph(){
+    const gx=W*0.74, gy=H*0.16, gw=W*0.22, gh=H*0.66;
+    ctx.strokeStyle=cssVar('--border-2'); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(gx,gy); ctx.lineTo(gx,gy+gh); ctx.lineTo(gx+gw,gy+gh); ctx.stroke();
+    ctx.fillStyle=cssVar('--muted'); ctx.font='11px sans-serif'; ctx.textAlign='left';
+    ctx.fillText('i',gx-4,gy-4); ctx.textAlign='right'; ctx.fillText('V',gx+gw,gy+gh+14);
+    const R=parseFloat(rS.value), Vmax=12, imax=Vmax/2; // scala i su Vmax/Rmin ~ ma normalizziamo
+    const iAtVmax=Vmax/R;
+    // retta i=V/R normalizzata: al Vmax l'altezza usa min(gh, ...) — normalizza su iAtVmax se >0
+    const yTop = iAtVmax>0 ? gy : gy+gh;
+    ctx.strokeStyle=cssVar('--accent'); ctx.lineWidth=2; ctx.beginPath();
+    ctx.moveTo(gx,gy+gh); ctx.lineTo(gx+gw, gy+gh - gh*Math.min(1, (iAtVmax)/(Vmax/2)) ); ctx.stroke();
+    // punto attuale
+    const V=parseFloat(vS.value); const px=gx+gw*(V/Vmax); const frac=Math.min(1,(V/R)/(Vmax/2));
+    const py=gy+gh-gh*frac;
+    ctx.fillStyle=cssVar('--pos'); ctx.beginPath(); ctx.arc(px,py,4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=cssVar('--muted'); ctx.font='10px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('i = V/R',gx+gw*0.5, gy+2);
+  }
+  let last=performance.now();
+  function loop(now){ const dt=Math.min(0.05,(now-last)/1000); last=now;
+    const speed=Math.min(2.5,current*10);
+    for(const el of electrons){ el.t-= speed*dt*0.25; if(el.t<0) el.t+=1; }
+    draw(); requestAnimationFrame(loop); }
+  [vS,rS].forEach(s=>s.addEventListener('input',compute));
+  window.addEventListener('resize',()=>{resize();draw();});
+  simEnsure['m3-sim']=()=>{ resize(); compute(); draw(); };
+  setTimeout(()=>{ resize(); compute(); requestAnimationFrame(loop); },60);
+})();
 
-function buildExercises() {
-  const cont = document.getElementById('exercisesContainer');
-  exercises.forEach((ex, idx) => {
-    const el = document.createElement('div');
-    el.className = 'exercise';
-    el.innerHTML = `
-      <div class="ex-head">
-        <h3 style="margin:0">${idx + 1}. ${ex.title}</h3>
-        <span class="ex-diff ${ex.diff}">${ex.diffLabel}</span>
-      </div>
-      <p>${ex.text}</p>
-      <div class="hint-box" id="hints-${idx}"></div>
-      <div class="btn-row">
-        <button class="btn" data-hint="${idx}">Mostra un aiuto</button>
-        <button class="btn" data-sol="${idx}">Mostra soluzione</button>
-      </div>
-      <div class="answer-row">
-        <input type="number" step="any" placeholder="Risposta (${ex.unit})" id="ans-${idx}">
-        <button class="btn primary" data-check="${idx}">Verifica</button>
-      </div>
-      <div class="feedback" id="fb-${idx}"></div>
-    `;
+/* ============================================================
+   SIMULAZIONE — CIRCUITO (serie / parallelo, generatore reale)
+   ============================================================ */
+(function circuitSim(){
+  const canvas=document.getElementById('circuitCanvas'); const ctx=canvas.getContext('2d');
+  let W=0,H=0,dpr=1;
+  const emf=document.getElementById('emf'), rint=document.getElementById('rint'),
+        r1=document.getElementById('r1'), r2=document.getElementById('r2'),
+        topoSeries=document.getElementById('topoSeries'), topoParallel=document.getElementById('topoParallel');
+  const emfVal=document.getElementById('emfVal'), rintVal=document.getElementById('rintVal'),
+        r1Val=document.getElementById('r1Val'), r2Val=document.getElementById('r2Val');
+  const mReq=document.getElementById('mReq'), mI=document.getElementById('mI'), mV=document.getElementById('mV'), mP=document.getElementById('mP');
+  let electrons=[], current=0, isParallel=false, iTotal=0,iB1=0,iB2=0;
+  let geo=null, loops=[], builtParallel=null;
+
+  function computeState(){
+    const E=parseFloat(emf.value), r=parseFloat(rint.value), R1=parseFloat(r1.value), R2=parseFloat(r2.value);
+    let Req = topoParallel.checked ? (R1*R2)/(R1+R2) : R1+R2;
+    const i=E/(Req+r); const Vterm=E-r*i; const P=i*i*Req;
+    current=i; iTotal=i;
+    if(topoParallel.checked){ const Vpar=i*Req; iB1=Vpar/R1; iB2=Vpar/R2; } else { iB1=iB2=i; }
+    if(topoParallel.checked!==builtParallel){ isParallel=topoParallel.checked; rebuildGeometry(); }
+    emfVal.textContent=E.toFixed(1)+' V'; rintVal.textContent=r.toFixed(1)+' Ω';
+    r1Val.textContent=R1.toFixed(0)+' Ω'; r2Val.textContent=R2.toFixed(0)+' Ω';
+    mReq.textContent=Req.toFixed(1); mI.textContent=(i*1000).toFixed(1)+' mA';
+    mV.textContent=Vterm.toFixed(2)+' V'; mP.textContent=(P>=1?P.toFixed(2)+' W':(P*1000).toFixed(0)+' mW');
+  }
+  function polyLen(pts){ let L=0; for(let i=0;i<pts.length-1;i++) L+=Math.hypot(pts[i+1].x-pts[i].x,pts[i+1].y-pts[i].y); return L; }
+  function posOnLoop(loop,t){ let d=(((t%1)+1)%1)*loop.len; const pts=loop.pts;
+    for(let i=0;i<pts.length-1;i++){ const seg=Math.hypot(pts[i+1].x-pts[i].x,pts[i+1].y-pts[i].y);
+      if(d<=seg){ const f=seg===0?0:d/seg; return {x:pts[i].x+(pts[i+1].x-pts[i].x)*f, y:pts[i].y+(pts[i+1].y-pts[i].y)*f}; } d-=seg; }
+    return pts[pts.length-1]; }
+  function buildGeometry(){
+    const m=46, x0=m,y0=m,x1=W-m,y1=H-m; const xA=x0+(x1-x0)*0.34, xB=x0+(x1-x0)*0.66; const d=Math.min(30,(y1-y0)*0.18);
+    geo={x0,y0,x1,y1,xA,xB,d};
+    const trunk=[{x:xB,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1},{x:x0,y:y0},{x:xA,y:y0}];
+    loops=[];
+    if(isParallel){ const up=[{x:xA,y:y0-d},{x:xB,y:y0-d},{x:xB,y:y0}]; const lo=[{x:xA,y:y0+d},{x:xB,y:y0+d},{x:xB,y:y0}];
+      loops.push({pts:trunk.concat(up),ref:'b1'}); loops.push({pts:trunk.concat(lo),ref:'b2'}); }
+    else { loops.push({pts:trunk.concat([{x:xB,y:y0}]),ref:'total'}); }
+    loops.forEach(L=>{L.len=polyLen(L.pts);});
+  }
+  function initElectrons(){ electrons=[]; const per=isParallel?13:24;
+    loops.forEach((L,li)=>{ for(let k=0;k<per;k++) electrons.push({loop:li,t:k/per}); }); }
+  function rebuildGeometry(){ buildGeometry(); initElectrons(); builtParallel=isParallel; }
+  function resize(){ const rect=canvas.getBoundingClientRect(); if(rect.width===0) return;
+    dpr=Math.min(window.devicePixelRatio||1,2); W=rect.width; H=Math.max(240,Math.round(W*0.52));
+    canvas.style.height=H+'px'; canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);
+    isParallel=topoParallel.checked; rebuildGeometry(); }
+  function drawBattery(x,y){ ctx.save(); ctx.strokeStyle=cssVar('--text'); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(x-12,y-14); ctx.lineTo(x+12,y-14); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x-7,y-2); ctx.lineTo(x+7,y-2); ctx.stroke();
+    ctx.fillStyle=cssVar('--pos'); ctx.font='bold 13px sans-serif'; ctx.textAlign='center'; ctx.fillText('+',x+20,y-12);
+    ctx.fillStyle=cssVar('--neg'); ctx.fillText('−',x+20,y+3); ctx.restore(); }
+  function drawResistor(cx,cy,label,color){ ctx.save(); ctx.fillStyle=color; ctx.strokeStyle=cssVar('--text'); ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.roundRect(cx-26,cy-11,52,22,5); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='bold 12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(label,cx,cy); ctx.restore(); }
+  function wire(pts){ ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x,pts[i].y); ctx.stroke(); }
+  function node(x,y){ ctx.beginPath(); ctx.arc(x,y,4.5,0,Math.PI*2); ctx.fillStyle=cssVar('--wire'); ctx.fill(); }
+  function draw(){
+    if(!geo||W===0) return; ctx.clearRect(0,0,W,H); const {x0,y0,x1,y1,xA,xB,d}=geo;
+    ctx.strokeStyle=cssVar('--wire'); ctx.lineWidth=4; ctx.lineJoin='round'; ctx.lineCap='round';
+    wire([{x:xB,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1},{x:x0,y:y0},{x:xA,y:y0}]);
+    if(isParallel){
+      wire([{x:xA,y:y0-d},{x:xA,y:y0+d}]); wire([{x:xB,y:y0-d},{x:xB,y:y0+d}]);
+      wire([{x:xA,y:y0-d},{x:xB,y:y0-d}]); wire([{x:xA,y:y0+d},{x:xB,y:y0+d}]);
+      node(xA,y0); node(xB,y0);
+      drawResistor((xA+xB)/2,y0-d,'R₁',cssVar('--accent')); drawResistor((xA+xB)/2,y0+d,'R₂',cssVar('--pos'));
+      ctx.fillStyle=cssVar('--muted'); ctx.font='12px sans-serif'; ctx.textAlign='center';
+      ctx.fillText('R₁ ∥ R₂  (in parallelo)',(xA+xB)/2,y0+d+24);
+      ctx.fillStyle=cssVar('--i-color'); ctx.font='11px sans-serif';
+      ctx.fillText((iB1*1000).toFixed(0)+' mA',(xA+xB)/2,y0-d-18); ctx.fillText((iB2*1000).toFixed(0)+' mA',(xA+xB)/2+66,y0+d-16);
+    } else {
+      wire([{x:xA,y:y0},{x:xB,y:y0}]);
+      drawResistor(xA+(xB-xA)*0.30,y0,'R₁',cssVar('--accent')); drawResistor(xA+(xB-xA)*0.70,y0,'R₂',cssVar('--pos'));
+      ctx.fillStyle=cssVar('--muted'); ctx.font='12px sans-serif'; ctx.textAlign='center'; ctx.fillText('R₁ — R₂  (in serie)',(xA+xB)/2,y0-22);
+    }
+    drawBattery(x0,(y0+y1)/2);
+    ctx.fillStyle=cssVar('--i-color'); ctx.font='bold 13px sans-serif'; ctx.textAlign='right';
+    ctx.fillText('i = '+(current*1000).toFixed(0)+' mA',x1-12,(y0+y1)/2-8);
+    ctx.fillStyle=cssVar('--electron');
+    for(const el of electrons){ const L=loops[el.loop]; if(!L) continue; const p=posOnLoop(L,el.t);
+      ctx.beginPath(); ctx.arc(p.x,p.y,3.4,0,Math.PI*2); ctx.fill(); }
+  }
+  let last=performance.now();
+  function loop(now){ const dt=Math.min(0.05,(now-last)/1000); last=now;
+    for(const el of electrons){ const L=loops[el.loop]; if(!L) continue;
+      const iref=L.ref==='b1'?iB1:(L.ref==='b2'?iB2:iTotal); const pxPerSec=Math.min(300,iref*680);
+      const rate=L.len>0?pxPerSec/L.len:0; el.t=(((el.t-rate*dt)%1)+1)%1; }
+    draw(); requestAnimationFrame(loop); }
+  [emf,rint,r1,r2].forEach(s=>s.addEventListener('input',computeState));
+  [topoSeries,topoParallel].forEach(r=>r.addEventListener('change',computeState));
+  window.addEventListener('resize',()=>{resize();draw();});
+  simEnsure['m4-sim']=()=>{ resize(); computeState(); };
+  setTimeout(()=>{ resize(); computeState(); requestAnimationFrame(loop); },60);
+})();
+
+/* ============================================================
+   ESERCIZI GUIDATI (per modulo)
+   ============================================================ */
+const EXERCISES = {
+  'eser-m1':[
+    { diff:'base',diffLabel:'Base', title:'Forza di Coulomb tra due cariche',
+      text:'Due cariche puntiformi \\(q_1=2{,}0\\ \\mu\\mathrm C\\) e \\(q_2=3{,}0\\ \\mu\\mathrm C\\) nel vuoto distano \\(r=0{,}20\\ \\mathrm m\\). Calcola l\'intensità della forza (in N).',
+      hints:['Legge di Coulomb: \\(F=k\\,\\dfrac{|q_1 q_2|}{r^2}\\), con \\(k=8{,}99\\times10^9\\).',
+             '\\(1\\ \\mu\\mathrm C=10^{-6}\\ \\mathrm C\\): \\(q_1 q_2=6{,}0\\times10^{-12}\\ \\mathrm{C^2}\\).',
+             '\\(r^2=0{,}040\\ \\mathrm{m^2}\\), quindi \\(F=8{,}99\\times10^9\\cdot\\dfrac{6{,}0\\times10^{-12}}{0{,}040}\\).'],
+      answer:1.35, tol:0.08, unit:'N',
+      solution:'\\(F\\approx1{,}35\\ \\mathrm N\\), repulsiva (cariche concordi).' },
+    { diff:'base',diffLabel:'Base', title:'Campo di una carica puntiforme',
+      text:'Intensità del campo (in N/C) generato da \\(Q=5{,}0\\ \\mathrm{nC}\\) a \\(r=0{,}10\\ \\mathrm m\\)?',
+      hints:['\\(E=k\\,\\dfrac{|Q|}{r^2}\\).','\\(Q=5{,}0\\times10^{-9}\\ \\mathrm C\\), \\(r^2=0{,}010\\ \\mathrm{m^2}\\).'],
+      answer:4495, tol:200, unit:'N/C',
+      solution:'\\(E=8{,}99\\times10^9\\cdot\\dfrac{5{,}0\\times10^{-9}}{0{,}010}\\approx4{,}5\\times10^3\\ \\mathrm{N/C}\\).' },
+    { diff:'medio',diffLabel:'Medio', title:'Forza su una carica in un campo',
+      text:'Una carica \\(q=5{,}0\\ \\mu\\mathrm C\\) è in un campo uniforme \\(E=3{,}0\\times10^4\\ \\mathrm{N/C}\\). Forza su di essa (in N)?',
+      hints:['La definizione di campo dà \\(\\vec F=q\\vec E\\).','\\(F=(5{,}0\\times10^{-6})(3{,}0\\times10^4)\\).'],
+      answer:0.15, tol:0.01, unit:'N',
+      solution:'\\(F=qE=0{,}15\\ \\mathrm N\\).' }
+  ],
+  'eser-m2':[
+    { diff:'base',diffLabel:'Base', title:'Potenziale di una carica puntiforme',
+      text:'Potenziale (in V) di \\(Q=8{,}0\\ \\mathrm{nC}\\) a distanza \\(r=0{,}20\\ \\mathrm m\\)?',
+      hints:['\\(V=k\\,\\dfrac{Q}{r}\\).','\\(V=8{,}99\\times10^9\\cdot\\dfrac{8{,}0\\times10^{-9}}{0{,}20}\\).'],
+      answer:360, tol:15, unit:'V',
+      solution:'\\(V\\approx360\\ \\mathrm V\\).' },
+    { diff:'medio',diffLabel:'Medio', title:'Campo uniforme tra due lastre',
+      text:'Tra due lastre distanti \\(d=0{,}030\\ \\mathrm m\\) c\'è \\(\\Delta V=120\\ \\mathrm V\\). Campo uniforme (in V/m)?',
+      hints:['In un campo uniforme \\(E=\\dfrac{\\Delta V}{d}\\).','\\(E=120/0{,}030\\).'],
+      answer:4000, tol:100, unit:'V/m',
+      solution:'\\(E=4000\\ \\mathrm{V/m}\\).' },
+    { diff:'avanz',diffLabel:'Avanzato', title:'Flusso e teorema di Gauss',
+      text:'Una superficie chiusa racchiude una carica \\(Q=2{,}0\\ \\mu\\mathrm C\\). Flusso del campo elettrico (in N·m²/C)? Usa \\(\\varepsilon_0=8{,}85\\times10^{-12}\\).',
+      hints:['Teorema di Gauss: \\(\\Phi=\\dfrac{Q_{int}}{\\varepsilon_0}\\).','\\(\\Phi=\\dfrac{2{,}0\\times10^{-6}}{8{,}85\\times10^{-12}}\\).'],
+      answer:226000, tol:8000, unit:'N·m²/C',
+      solution:'\\(\\Phi=\\dfrac{2{,}0\\times10^{-6}}{8{,}85\\times10^{-12}}\\approx2{,}3\\times10^{5}\\ \\mathrm{N\\,m^2/C}\\), indipendente dalla forma della superficie.' }
+  ],
+  'eser-m3':[
+    { diff:'base',diffLabel:'Base', title:'Prima legge di Ohm',
+      text:'Un resistore porta \\(i=0{,}25\\ \\mathrm A\\) con \\(V=5{,}0\\ \\mathrm V\\) ai capi. Resistenza (in Ω)?',
+      hints:['\\(V=R\\,i\\).','\\(R=\\dfrac{V}{i}=\\dfrac{5{,}0}{0{,}25}\\).'],
+      answer:20, tol:0.5, unit:'Ω',
+      solution:'\\(R=20\\ \\Omega\\).' },
+    { diff:'medio',diffLabel:'Medio', title:'Potenza dissipata (effetto Joule)',
+      text:'Un resistore \\(R=100\\ \\Omega\\) è percorso da \\(i=0{,}30\\ \\mathrm A\\). Potenza dissipata (in W)?',
+      hints:['Con \\(R\\) e \\(i\\): \\(P=R\\,i^2\\).','\\(i^2=0{,}09\\ \\mathrm{A^2}\\).'],
+      answer:9, tol:0.3, unit:'W',
+      solution:'\\(P=100\\cdot0{,}09=9{,}0\\ \\mathrm W\\).' },
+    { diff:'avanz',diffLabel:'Avanzato', title:'Seconda legge di Ohm',
+      text:'Filo di rame (\\(\\rho=1{,}7\\times10^{-8}\\ \\Omega\\mathrm m\\)), lungo \\(\\ell=20\\ \\mathrm m\\), sezione \\(A=1{,}0\\ \\mathrm{mm^2}\\). Resistenza (in Ω)?',
+      hints:['\\(R=\\rho\\dfrac{\\ell}{A}\\).','\\(1{,}0\\ \\mathrm{mm^2}=1{,}0\\times10^{-6}\\ \\mathrm{m^2}\\).',
+             '\\(R=1{,}7\\times10^{-8}\\cdot\\dfrac{20}{1{,}0\\times10^{-6}}\\).'],
+      answer:0.34, tol:0.02, unit:'Ω',
+      solution:'\\(R=0{,}34\\ \\Omega\\).' }
+  ],
+  'eser-m4':[
+    { diff:'base',diffLabel:'Base', title:'Resistori in serie',
+      text:'Due resistori \\(R_1=150\\ \\Omega\\) e \\(R_2=250\\ \\Omega\\) in serie. Resistenza equivalente (in Ω)?',
+      hints:['In serie le resistenze si sommano.'],
+      answer:400, tol:1, unit:'Ω',
+      solution:'\\(R_{eq}=150+250=400\\ \\Omega\\).' },
+    { diff:'medio',diffLabel:'Medio', title:'Resistori in parallelo',
+      text:'Due resistori \\(R_1=6{,}0\\ \\Omega\\) e \\(R_2=3{,}0\\ \\Omega\\) in parallelo. Resistenza equivalente (in Ω)?',
+      hints:['\\(\\dfrac{1}{R_{eq}}=\\dfrac{1}{R_1}+\\dfrac{1}{R_2}\\).','Per due: \\(R_{eq}=\\dfrac{R_1R_2}{R_1+R_2}=\\dfrac{18}{9}\\).'],
+      answer:2, tol:0.1, unit:'Ω',
+      solution:'\\(R_{eq}=2{,}0\\ \\Omega\\), minore del più piccolo (3,0 Ω).' },
+    { diff:'avanz',diffLabel:'Avanzato', title:'Generatore reale',
+      text:'Batteria \\(\\varepsilon=12\\ \\mathrm V\\), \\(r=0{,}50\\ \\Omega\\), carico \\(R=5{,}5\\ \\Omega\\). Corrente (in A)?',
+      hints:['\\(i=\\dfrac{\\varepsilon}{R+r}\\).','\\(R+r=6{,}0\\ \\Omega\\), quindi \\(i=\\dfrac{12}{6{,}0}\\).'],
+      answer:2, tol:0.05, unit:'A',
+      solution:'\\(i=2{,}0\\ \\mathrm A\\); tensione ai morsetti \\(V=12-0{,}50\\cdot2=11\\ \\mathrm V\\).' }
+  ]
+};
+
+function buildExercises(containerId, list){
+  const cont=document.getElementById(containerId);
+  const hintState=list.map(()=>0);
+  list.forEach((ex,idx)=>{
+    const el=document.createElement('div'); el.className='exercise';
+    el.innerHTML=`<div class="ex-head"><h3 style="margin:0">${idx+1}. ${ex.title}</h3><span class="ex-diff ${ex.diff}">${ex.diffLabel}</span></div>
+      <p>${ex.text}</p><div id="${containerId}-hints-${idx}"></div>
+      <div class="btn-row"><button class="btn" data-hint="${idx}">Mostra un aiuto</button><button class="btn" data-sol="${idx}">Mostra soluzione</button></div>
+      <div class="answer-row"><input type="number" step="any" placeholder="Risposta (${ex.unit})" id="${containerId}-ans-${idx}"><button class="btn primary" data-check="${idx}">Verifica</button></div>
+      <div class="feedback" id="${containerId}-fb-${idx}"></div>`;
     cont.appendChild(el);
   });
-
-  // stato aiuti
-  const hintState = exercises.map(() => 0);
-
-  cont.querySelectorAll('[data-hint]').forEach(b => {
-    b.addEventListener('click', () => {
-      const i = +b.dataset.hint;
-      const box = document.getElementById('hints-' + i);
-      if (hintState[i] < exercises[i].hints.length) {
-        const h = document.createElement('div');
-        h.className = 'hint';
-        h.innerHTML = `<span class="h-tag">Aiuto ${hintState[i] + 1}</span><div>${exercises[i].hints[hintState[i]]}</div>`;
-        box.appendChild(h);
-        hintState[i]++;
-        if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([h]);
-        if (hintState[i] >= exercises[i].hints.length) {
-          b.textContent = 'Nessun altro aiuto';
-          b.disabled = true;
-          b.style.opacity = .6;
-        }
-      }
-    });
-  });
-
-  cont.querySelectorAll('[data-sol]').forEach(b => {
-    b.addEventListener('click', () => {
-      const i = +b.dataset.sol;
-      const box = document.getElementById('hints-' + i);
-      if (box.querySelector('.solution-shown')) return;
-      const s = document.createElement('div');
-      s.className = 'hint solution-shown';
-      s.style.borderStyle = 'solid';
-      s.style.borderColor = 'var(--accent)';
-      s.innerHTML = `<span class="h-tag">Soluzione</span><div>${exercises[i].solution}</div>`;
-      box.appendChild(s);
-      if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([s]);
-    });
-  });
-
-  cont.querySelectorAll('[data-check]').forEach(b => {
-    b.addEventListener('click', () => {
-      const i = +b.dataset.check;
-      const input = document.getElementById('ans-' + i);
-      const fb = document.getElementById('fb-' + i);
-      const val = parseFloat(input.value.replace(',', '.'));
-      fb.className = 'feedback show';
-      if (isNaN(val)) {
-        fb.classList.add('wrong');
-        fb.innerHTML = 'Inserisci un valore numerico per procedere.';
-        return;
-      }
-      const ex = exercises[i];
-      if (Math.abs(val - ex.answer) <= ex.tol) {
-        fb.classList.add('correct');
-        fb.innerHTML = `<b>Corretto.</b> ${ex.answer} ${ex.unit}. Hai impostato bene il procedimento.`;
-      } else {
-        fb.classList.add('wrong');
-        const rel = val > ex.answer ? 'più alto' : 'più basso';
-        fb.innerHTML = `<b>Non ci siamo ancora.</b> Il tuo valore è ${rel} di quello atteso. Rivedi gli aiuti o le unità di misura, poi riprova — capita spesso di sbagliare una potenza di dieci.`;
-      }
-    });
-  });
+  cont.querySelectorAll('[data-hint]').forEach(b=> b.addEventListener('click',()=>{
+    const i=+b.dataset.hint, box=document.getElementById(containerId+'-hints-'+i);
+    if(hintState[i]<list[i].hints.length){ const h=document.createElement('div'); h.className='hint';
+      h.innerHTML=`<span class="h-tag">Aiuto ${hintState[i]+1}</span><div>${list[i].hints[hintState[i]]}</div>`;
+      box.appendChild(h); hintState[i]++; if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([h]);
+      if(hintState[i]>=list[i].hints.length){ b.textContent='Nessun altro aiuto'; b.disabled=true; b.style.opacity=.6; } }
+  }));
+  cont.querySelectorAll('[data-sol]').forEach(b=> b.addEventListener('click',()=>{
+    const i=+b.dataset.sol, box=document.getElementById(containerId+'-hints-'+i);
+    if(box.querySelector('.solution-shown')) return;
+    const s=document.createElement('div'); s.className='hint solution-shown'; s.style.borderStyle='solid'; s.style.borderColor='var(--accent)';
+    s.innerHTML=`<span class="h-tag">Soluzione</span><div>${list[i].solution}</div>`;
+    box.appendChild(s); if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([s]);
+  }));
+  cont.querySelectorAll('[data-check]').forEach(b=> b.addEventListener('click',()=>{
+    const i=+b.dataset.check, input=document.getElementById(containerId+'-ans-'+i), fb=document.getElementById(containerId+'-fb-'+i);
+    const val=parseFloat((input.value||'').replace(',','.')); fb.className='feedback show';
+    if(isNaN(val)){ fb.classList.add('wrong'); fb.innerHTML='Inserisci un valore numerico per procedere.'; return; }
+    const ex=list[i];
+    if(Math.abs(val-ex.answer)<=ex.tol){ fb.classList.add('correct'); fb.innerHTML=`<b>Corretto.</b> ${ex.answer} ${ex.unit}. Hai impostato bene il procedimento.`; }
+    else{ fb.classList.add('wrong'); const rel=val>ex.answer?'più alto':'più basso';
+      fb.innerHTML=`<b>Non ci siamo ancora.</b> Il tuo valore è ${rel} di quello atteso. Rivedi gli aiuti o le unità di misura — capita spesso di sbagliare una potenza di dieci.`; }
+  }));
 }
-buildExercises();
+Object.keys(EXERCISES).forEach(id=> buildExercises(id, EXERCISES[id]));
 
 /* ============================================================
-   QUIZ — due quiz di sezione (correzione immediata) + quiz finale
-   (punteggio e spiegazioni solo alla fine). La posizione della
-   risposta esatta è sempre casuale (le opzioni vengono rimescolate).
+   QUIZ (per modulo) — una domanda alla volta, correzione immediata,
+   posizione della risposta esatta casuale
    ============================================================ */
-
-/* ---- Dati: Sezione 1 — Campo elettrico ---- */
-const QUIZ_CAMPO = {
-  theory: [
-    { q: 'La forza di Coulomb tra due cariche puntiformi è proporzionale a:',
-      options: ['\\(1/r^2\\)', '\\(1/r\\)', '\\(r\\)', '\\(r^2\\)'], correct: 0,
-      explain: 'La legge di Coulomb è \\(F = k\\,|q_1 q_2|/r^2\\): la forza diminuisce con il quadrato della distanza.' },
-    { q: 'Due cariche dello stesso segno poste vicine:',
-      options: ['Si respingono', 'Si attraggono', 'Non interagiscono', 'Si annullano'], correct: 0,
-      explain: 'Cariche di segno concorde si respingono; solo cariche di segno opposto si attraggono.' },
-    { q: 'Nel SI il campo elettrico si misura in:',
-      options: ['N/C (equivalente a V/m)', 'J/C', 'C/N', 'N·C'], correct: 0,
-      explain: '\\(E = F/q\\), quindi N/C; è equivalente a V/m. Invece J/C = V è il potenziale.' },
-    { q: 'Il campo elettrico generato da una carica puntiforme positiva è diretto:',
-      options: ['Radialmente verso l\'esterno', 'Radialmente verso la carica', 'In cerchi attorno alla carica', 'Parallelamente a un asse fisso'], correct: 0,
-      explain: 'Le linee escono dalle cariche positive: \\(\\vec E\\) punta lontano dalla carica.' },
-    { q: 'Il campo prodotto da più cariche in un punto si ottiene:',
-      options: ['Come somma vettoriale dei singoli campi', 'Come somma dei moduli dei campi', 'Considerando solo la carica più vicina', 'Facendo la media dei campi'], correct: 0,
-      explain: 'Vale il principio di sovrapposizione: \\(\\vec E_{tot}=\\vec E_1+\\vec E_2+\\dots\\), somma vettoriale.' },
-    { q: 'Riguardo alle linee di campo elettrico, quale affermazione è corretta?',
-      options: ['Sono tangenti al vettore E in ogni punto e non si incrociano', 'Si incrociano dove il campo è intenso', 'Escono dalle cariche negative', 'Sono sempre rette parallele'], correct: 0,
-      explain: 'La linea di campo è tangente a \\(\\vec E\\) punto per punto; due linee non si incrociano mai perché il campo ha una sola direzione.' },
-    { q: 'Il teorema di Gauss afferma che il flusso di E attraverso una superficie chiusa dipende:',
-      options: ['Solo dalla carica racchiusa', 'Dalla forma della superficie', 'Dalle cariche esterne vicine', 'Dal materiale della superficie'], correct: 0,
-      explain: '\\(\\Phi(\\vec E)=Q_{int}/\\varepsilon_0\\): conta solo la carica interna alla superficie.' },
-    { q: 'All\'interno di un conduttore in equilibrio elettrostatico il campo elettrico è:',
-      options: ['Nullo', 'Massimo', 'Uniforme e diverso da zero', 'Diretto verso il centro'], correct: 0,
-      explain: 'In equilibrio le cariche si dispongono sulla superficie e il campo interno è nullo.' },
-    { q: 'Il campo elettrico di un piano infinito uniformemente carico:',
-      options: ['È uniforme e non dipende dalla distanza', 'Diminuisce come \\(1/r\\)', 'Diminuisce come \\(1/r^2\\)', 'Aumenta con la distanza'], correct: 0,
-      explain: 'Per un piano infinito \\(E=\\sigma/2\\varepsilon_0\\): costante, indipendente dalla distanza dal piano.' },
-    { q: 'Il potenziale elettrico di una carica puntiforme varia con la distanza come:',
-      options: ['\\(1/r\\)', '\\(1/r^2\\)', '\\(r\\)', 'Costante'], correct: 0,
-      explain: '\\(V=kQ/r\\): il potenziale va come \\(1/r\\), mentre il campo va come \\(1/r^2\\).' }
-  ],
-  problems: [
-    { q: 'Due cariche \\(q_1=2{,}0\\ \\mu\\mathrm{C}\\) e \\(q_2=4{,}0\\ \\mu\\mathrm{C}\\) distano \\(r=0{,}30\\ \\mathrm{m}\\) nel vuoto. Calcola l\'intensità della forza (in N).',
-      answer: 0.80, tol: 0.05, unit: 'N',
-      explain: '\\(F=8{,}99\\times10^9\\dfrac{(2\\times10^{-6})(4\\times10^{-6})}{0{,}30^2}\\approx 0{,}80\\ \\mathrm{N}\\).' },
-    { q: 'Campo elettrico di una carica \\(Q=3{,}0\\ \\mu\\mathrm{C}\\) a \\(r=0{,}30\\ \\mathrm{m}\\) (in N/C).',
-      answer: 300000, tol: 12000, unit: 'N/C',
-      explain: '\\(E=8{,}99\\times10^9\\dfrac{3{,}0\\times10^{-6}}{0{,}30^2}\\approx 3{,}0\\times10^{5}\\ \\mathrm{N/C}\\).' },
-    { q: 'Tra due lastre piane distanti \\(d=0{,}030\\ \\mathrm{m}\\) c\'è una differenza di potenziale \\(\\Delta V=120\\ \\mathrm{V}\\). Quanto vale il campo uniforme (in V/m)?',
-      answer: 4000, tol: 100, unit: 'V/m',
-      explain: '\\(E=\\Delta V/d = 120/0{,}030 = 4000\\ \\mathrm{V/m}\\).' },
-    { q: 'Potenziale di una carica \\(Q=8{,}0\\ \\mathrm{nC}\\) a distanza \\(r=0{,}20\\ \\mathrm{m}\\) (in V).',
-      answer: 360, tol: 15, unit: 'V',
-      explain: '\\(V=kQ/r=8{,}99\\times10^9\\dfrac{8{,}0\\times10^{-9}}{0{,}20}\\approx 360\\ \\mathrm{V}\\).' },
-    { q: 'Una carica \\(q=5{,}0\\ \\mu\\mathrm{C}\\) è immersa in un campo uniforme \\(E=3{,}0\\times10^4\\ \\mathrm{N/C}\\). Calcola la forza su di essa (in N).',
-      answer: 0.15, tol: 0.01, unit: 'N',
-      explain: '\\(F=qE=(5{,}0\\times10^{-6})(3{,}0\\times10^{4})=0{,}15\\ \\mathrm{N}\\).' }
-  ]
+const QUIZZES = {
+  'quiz-m1':{ theory:[
+    { q:'La forza di Coulomb tra due cariche puntiformi è proporzionale a:',
+      options:['\\(1/r^2\\)','\\(1/r\\)','\\(r\\)','\\(r^2\\)'], correct:0,
+      explain:'\\(F=k|q_1q_2|/r^2\\): va come l\'inverso del quadrato della distanza.' },
+    { q:'Due cariche dello stesso segno poste vicine:',
+      options:['Si respingono','Si attraggono','Non interagiscono','Si annullano'], correct:0,
+      explain:'Cariche concordi si respingono; solo cariche discordi si attraggono.' },
+    { q:'Nel SI il campo elettrico si misura in:',
+      options:['N/C (equivalente a V/m)','J/C','C/N','N·s'], correct:0,
+      explain:'\\(E=F/q\\) ⇒ N/C, equivalente a V/m. J/C = V è il potenziale.' },
+    { q:'Il campo di una carica puntiforme positiva è diretto:',
+      options:['Radialmente verso l\'esterno','Radialmente verso la carica','In cerchi attorno alla carica','Lungo un asse fisso'], correct:0,
+      explain:'Le linee escono dalle cariche positive: \\(\\vec E\\) punta lontano dalla carica.' },
+    { q:'Le linee del campo elettrico:',
+      options:['Sono tangenti a E in ogni punto e non si incrociano','Si incrociano dove il campo è intenso','Escono dalle cariche negative','Sono sempre rette parallele'], correct:0,
+      explain:'La linea è tangente a \\(\\vec E\\) punto per punto e non si incrocia mai.' }
+  ], problems:[
+    { q:'Due cariche \\(q_1=2{,}0\\ \\mu\\mathrm C\\), \\(q_2=4{,}0\\ \\mu\\mathrm C\\) a \\(r=0{,}30\\ \\mathrm m\\). Forza (in N)?',
+      answer:0.80, tol:0.05, unit:'N', explain:'\\(F=8{,}99\\times10^9\\dfrac{8\\times10^{-12}}{0{,}09}\\approx0{,}80\\ \\mathrm N\\).' },
+    { q:'Campo di \\(Q=3{,}0\\ \\mu\\mathrm C\\) a \\(r=0{,}30\\ \\mathrm m\\) (in N/C)?',
+      answer:300000, tol:12000, unit:'N/C', explain:'\\(E\\approx3{,}0\\times10^5\\ \\mathrm{N/C}\\).' },
+    { q:'Forza su \\(q=5{,}0\\ \\mu\\mathrm C\\) in \\(E=3{,}0\\times10^4\\ \\mathrm{N/C}\\) (in N)?',
+      answer:0.15, tol:0.01, unit:'N', explain:'\\(F=qE=0{,}15\\ \\mathrm N\\).' }
+  ]},
+  'quiz-m2':{ theory:[
+    { q:'Il potenziale di una carica puntiforme varia con la distanza come:',
+      options:['\\(1/r\\)','\\(1/r^2\\)','\\(r\\)','Costante'], correct:0,
+      explain:'\\(V=kQ/r\\) va come \\(1/r\\); il campo va come \\(1/r^2\\).' },
+    { q:'Il teorema di Gauss: il flusso attraverso una superficie chiusa dipende:',
+      options:['Solo dalla carica racchiusa','Dalla forma della superficie','Dalle cariche esterne vicine','Dal materiale della superficie'], correct:0,
+      explain:'\\(\\Phi=Q_{int}/\\varepsilon_0\\): conta solo la carica interna.' },
+    { q:'All\'interno di un conduttore in equilibrio elettrostatico il campo è:',
+      options:['Nullo','Massimo','Uniforme e non nullo','Diretto verso il centro'], correct:0,
+      explain:'Le cariche si dispongono sulla superficie: campo interno nullo.' },
+    { q:'Il campo di un piano infinito uniformemente carico:',
+      options:['È uniforme, indipendente dalla distanza','Va come \\(1/r\\)','Va come \\(1/r^2\\)','Aumenta con la distanza'], correct:0,
+      explain:'\\(E=\\sigma/2\\varepsilon_0\\): costante.' },
+    { q:'In un campo uniforme tra due lastre a distanza d, la relazione è:',
+      options:['\\(E=\\Delta V/d\\)','\\(E=\\Delta V\\cdot d\\)','\\(E=d/\\Delta V\\)','\\(E=\\Delta V/d^2\\)'], correct:0,
+      explain:'\\(\\Delta V=E\\,d\\) ⇒ \\(E=\\Delta V/d\\).' }
+  ], problems:[
+    { q:'Potenziale di \\(Q=8{,}0\\ \\mathrm{nC}\\) a \\(r=0{,}20\\ \\mathrm m\\) (in V)?',
+      answer:360, tol:15, unit:'V', explain:'\\(V=kQ/r\\approx360\\ \\mathrm V\\).' },
+    { q:'Campo uniforme con \\(\\Delta V=120\\ \\mathrm V\\), \\(d=0{,}030\\ \\mathrm m\\) (in V/m)?',
+      answer:4000, tol:100, unit:'V/m', explain:'\\(E=120/0{,}030=4000\\ \\mathrm{V/m}\\).' },
+    { q:'Flusso attraverso una superficie che racchiude \\(Q=1{,}0\\ \\mu\\mathrm C\\) (in N·m²/C)? (\\(\\varepsilon_0=8{,}85\\times10^{-12}\\))',
+      answer:113000, tol:5000, unit:'N·m²/C', explain:'\\(\\Phi=\\dfrac{1{,}0\\times10^{-6}}{8{,}85\\times10^{-12}}\\approx1{,}1\\times10^5\\).' }
+  ]},
+  'quiz-m3':{ theory:[
+    { q:'L\'intensità di corrente elettrica è:',
+      options:['La carica che attraversa una sezione nell\'unità di tempo','La carica totale del conduttore','La velocità degli elettroni','La tensione per unità di lunghezza'], correct:0,
+      explain:'\\(i=\\Delta q/\\Delta t\\), in ampere (C/s).' },
+    { q:'Il verso convenzionale della corrente è:',
+      options:['Opposto al moto degli elettroni','Uguale al moto degli elettroni','Sempre da destra a sinistra','Indefinito'], correct:0,
+      explain:'È il verso delle cariche positive, opposto al moto reale degli elettroni.' },
+    { q:'La prima legge di Ohm afferma che:',
+      options:['\\(V=R\\,i\\) con R costante','\\(V=R/i\\)','\\(i=R\\,V\\)','\\(R=V\\,i\\)'], correct:0,
+      explain:'Nei conduttori ohmici \\(V=R\\,i\\).' },
+    { q:'A parità di materiale, la resistenza di un filo:',
+      options:['Aumenta con la lunghezza e diminuisce con la sezione','Aumenta con la sezione','Non dipende dalla geometria','Diminuisce con la lunghezza'], correct:0,
+      explain:'\\(R=\\rho\\ell/A\\): lungo e sottile ⇒ R grande.' },
+    { q:'La potenza dissipata per effetto Joule può scriversi come:',
+      options:['\\(R\\,i^2\\)','\\(R/i^2\\)','\\(i/R^2\\)','\\(R^2 i\\)'], correct:0,
+      explain:'\\(P=Vi=Ri^2=V^2/R\\).' }
+  ], problems:[
+    { q:'Corrente con \\(V=12\\ \\mathrm V\\) e \\(R=48\\ \\Omega\\) (in A)?',
+      answer:0.25, tol:0.01, unit:'A', explain:'\\(i=V/R=0{,}25\\ \\mathrm A\\).' },
+    { q:'Corrente con \\(R=180\\ \\Omega\\) e \\(V=9{,}0\\ \\mathrm V\\), in milliampere (mA)?',
+      answer:50, tol:2, unit:'mA', explain:'\\(i=9/180=0{,}05\\ \\mathrm A=50\\ \\mathrm{mA}\\).' },
+    { q:'Potenza con \\(R=50\\ \\Omega\\) e \\(i=0{,}40\\ \\mathrm A\\) (in W)?',
+      answer:8, tol:0.3, unit:'W', explain:'\\(P=Ri^2=50\\cdot0{,}16=8{,}0\\ \\mathrm W\\).' }
+  ]},
+  'quiz-m4':{ theory:[
+    { q:'In un collegamento in serie di resistori:',
+      options:['La corrente è la stessa in ciascuno e le resistenze si sommano','La tensione è la stessa su ciascuno','La resistenza equivalente è minore della più piccola','Le correnti si sommano'], correct:0,
+      explain:'In serie stessa corrente e \\(R_{eq}=R_1+R_2\\).' },
+    { q:'Collegando resistori in parallelo, la resistenza equivalente:',
+      options:['È minore della più piccola','È la somma delle resistenze','È la media','È maggiore della più grande'], correct:0,
+      explain:'\\(1/R_{eq}=\\sum 1/R_i\\): più strade ⇒ meno resistenza.' },
+    { q:'La legge dei nodi di Kirchhoff esprime:',
+      options:['La conservazione della carica','La conservazione dell\'energia','La legge di Ohm','La costanza della tensione'], correct:0,
+      explain:'In un nodo \\(\\sum i_{entranti}=\\sum i_{uscenti}\\).' },
+    { q:'In un generatore reale, aumentando la corrente erogata, la tensione ai morsetti:',
+      options:['Diminuisce, per la caduta \\(r\\,i\\)','Aumenta','Resta uguale alla f.e.m.','Si annulla sempre'], correct:0,
+      explain:'\\(V=\\varepsilon-r\\,i\\): più corrente ⇒ più caduta interna.' },
+    { q:'L\'effetto Joule trasforma l\'energia elettrica in:',
+      options:['Calore','Energia luminosa pura','Energia chimica','Energia gravitazionale'], correct:0,
+      explain:'In un resistore \\(P=Ri^2\\) si dissipa come calore.' }
+  ], problems:[
+    { q:'Due resistori \\(150\\ \\Omega\\) e \\(250\\ \\Omega\\) in serie. Equivalente (in Ω)?',
+      answer:400, tol:1, unit:'Ω', explain:'\\(R_{eq}=400\\ \\Omega\\).' },
+    { q:'Due resistori \\(12\\ \\Omega\\) e \\(4{,}0\\ \\Omega\\) in parallelo. Equivalente (in Ω)?',
+      answer:3, tol:0.1, unit:'Ω', explain:'\\(R_{eq}=\\dfrac{12\\cdot4}{16}=3{,}0\\ \\Omega\\).' },
+    { q:'Batteria \\(\\varepsilon=6{,}0\\ \\mathrm V\\), \\(r=0{,}50\\ \\Omega\\), \\(R=2{,}5\\ \\Omega\\). Corrente (in A)?',
+      answer:2, tol:0.05, unit:'A', explain:'\\(i=6{,}0/3{,}0=2{,}0\\ \\mathrm A\\).' }
+  ]}
 };
 
-/* ---- Dati: Sezione 2 — Corrente continua ---- */
-const QUIZ_CORRENTE = {
-  theory: [
-    { q: 'L\'intensità di corrente elettrica è:',
-      options: ['La carica che attraversa una sezione nell\'unità di tempo', 'La carica totale del conduttore', 'La velocità degli elettroni', 'La tensione per unità di lunghezza'], correct: 0,
-      explain: '\\(i=\\Delta q/\\Delta t\\), misurata in ampere (C/s).' },
-    { q: 'Il verso convenzionale della corrente è:',
-      options: ['Opposto al moto degli elettroni', 'Uguale al moto degli elettroni', 'Sempre da destra a sinistra', 'Indefinito'], correct: 0,
-      explain: 'Per convenzione la corrente ha il verso delle cariche positive, cioè opposto al moto reale degli elettroni.' },
-    { q: 'La prima legge di Ohm afferma che:',
-      options: ['\\(V=R\\,i\\), con R costante', '\\(V=R/i\\)', '\\(i=R\\,V\\)', '\\(R=V\\,i\\)'], correct: 0,
-      explain: 'Nei conduttori ohmici la tensione è proporzionale alla corrente: \\(V=R\\,i\\).' },
-    { q: 'A parità di materiale, la resistenza di un filo:',
-      options: ['Aumenta con la lunghezza e diminuisce con la sezione', 'Aumenta con la sezione', 'Non dipende dalla geometria', 'Diminuisce con la lunghezza'], correct: 0,
-      explain: 'Seconda legge di Ohm: \\(R=\\rho\\,\\ell/A\\). Lungo e sottile ⇒ R grande.' },
-    { q: 'Nei metalli, all\'aumentare della temperatura la resistività:',
-      options: ['Aumenta', 'Diminuisce', 'Resta costante', 'Si annulla'], correct: 0,
-      explain: 'Gli ioni vibrano di più e ostacolano gli elettroni: \\(\\rho(T)=\\rho_0[1+\\alpha(T-T_0)]\\), con \\(\\alpha>0\\).' },
-    { q: 'La potenza dissipata per effetto Joule in un resistore può scriversi come:',
-      options: ['\\(R\\,i^2\\)', '\\(R/i^2\\)', '\\(i/R^2\\)', '\\(R^2 i\\)'], correct: 0,
-      explain: '\\(P=V\\,i=R\\,i^2=V^2/R\\): tutte equivalenti tramite \\(V=Ri\\).' },
-    { q: 'In un collegamento in serie di resistori:',
-      options: ['La corrente è la stessa in ciascuno e le resistenze si sommano', 'La tensione è la stessa su ciascuno', 'La resistenza equivalente è minore della più piccola', 'Le correnti si sommano'], correct: 0,
-      explain: 'In serie passa la stessa corrente e \\(R_{eq}=R_1+R_2+\\dots\\).' },
-    { q: 'Collegando resistori in parallelo, la resistenza equivalente:',
-      options: ['È minore della più piccola delle resistenze', 'È la somma delle resistenze', 'È la media delle resistenze', 'È maggiore della più grande'], correct: 0,
-      explain: '\\(1/R_{eq}=\\sum 1/R_i\\): più strade parallele ⇒ meno resistenza complessiva.' },
-    { q: 'La legge dei nodi di Kirchhoff esprime:',
-      options: ['La conservazione della carica (correnti entranti = uscenti)', 'La conservazione dell\'energia', 'La legge di Ohm generalizzata', 'La costanza della tensione'], correct: 0,
-      explain: 'In un nodo nulla si accumula: \\(\\sum i_{entranti}=\\sum i_{uscenti}\\).' },
-    { q: 'In un generatore reale, aumentando la corrente erogata, la tensione ai morsetti:',
-      options: ['Diminuisce, per la caduta \\(r\\,i\\)', 'Aumenta', 'Resta uguale alla f.e.m.', 'Si annulla sempre'], correct: 0,
-      explain: '\\(V_{morsetti}=\\varepsilon-r\\,i\\): più corrente ⇒ maggiore caduta interna ⇒ minore tensione disponibile.' }
-  ],
-  problems: [
-    { q: 'Un resistore ha ai capi \\(V=12\\ \\mathrm{V}\\) ed è attraversato da... calcola la corrente sapendo \\(R=48\\ \\Omega\\) (in A).',
-      answer: 0.25, tol: 0.01, unit: 'A',
-      explain: '\\(i=V/R=12/48=0{,}25\\ \\mathrm{A}\\).' },
-    { q: 'Due resistori \\(R_1=150\\ \\Omega\\) e \\(R_2=250\\ \\Omega\\) in serie. Resistenza equivalente (in Ω)?',
-      answer: 400, tol: 1, unit: 'Ω',
-      explain: 'In serie: \\(R_{eq}=150+250=400\\ \\Omega\\).' },
-    { q: 'Due resistori \\(R_1=12\\ \\Omega\\) e \\(R_2=4{,}0\\ \\Omega\\) in parallelo. Resistenza equivalente (in Ω)?',
-      answer: 3, tol: 0.1, unit: 'Ω',
-      explain: '\\(R_{eq}=\\dfrac{12\\cdot 4}{12+4}=\\dfrac{48}{16}=3{,}0\\ \\Omega\\).' },
-    { q: 'Un resistore \\(R=50\\ \\Omega\\) è percorso da \\(i=0{,}40\\ \\mathrm{A}\\). Potenza dissipata (in W)?',
-      answer: 8, tol: 0.3, unit: 'W',
-      explain: '\\(P=R\\,i^2=50\\cdot 0{,}40^2=8{,}0\\ \\mathrm{W}\\).' },
-    { q: 'Batteria con \\(\\varepsilon=6{,}0\\ \\mathrm{V}\\), \\(r=0{,}50\\ \\Omega\\), carico \\(R=2{,}5\\ \\Omega\\). Corrente nel circuito (in A)?',
-      answer: 2, tol: 0.05, unit: 'A',
-      explain: '\\(i=\\dfrac{\\varepsilon}{R+r}=\\dfrac{6{,}0}{3{,}0}=2{,}0\\ \\mathrm{A}\\).' }
-  ]
-};
+function shuffleMC(item){ const arr=item.options.map((text,i)=>({text,ok:i===item.correct}));
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  return { options:arr.map(o=>o.text), correctIndex:arr.findIndex(o=>o.ok) }; }
+function parseNum(v){ return parseFloat(String(v).replace(',','.')); }
 
-/* ---- Dati: Quiz finale — Riepilogo (campo + corrente) ---- */
-const QUIZ_FINALE = {
-  theory: [
-    { q: 'Raddoppiando la distanza tra due cariche puntiformi, la forza di Coulomb:',
-      options: ['Diventa un quarto', 'Raddoppia', 'Si dimezza', 'Non cambia'], correct: 0,
-      explain: 'La forza va come \\(1/r^2\\): se \\(r\\) raddoppia, \\(r^2\\) quadruplica e la forza diventa un quarto.' },
-    { q: 'L\'unità V/m per il campo elettrico è equivalente a:',
-      options: ['N/C', 'J/C', 'C/s', 'W/A'], correct: 0,
-      explain: 'V/m = N/C: sono la stessa unità del campo elettrico.' },
-    { q: 'Le linee del campo elettrico:',
-      options: ['Escono dalle cariche positive ed entrano nelle negative', 'Escono dalle negative', 'Formano cerchi chiusi attorno alle cariche', 'Si incrociano nei punti intensi'], correct: 0,
-      explain: 'Per convenzione le linee escono dal + e entrano nel −, senza mai incrociarsi.' },
-    { q: 'Secondo il teorema di Gauss, il flusso di E attraverso una superficie chiusa vale:',
-      options: ['\\(Q_{int}/\\varepsilon_0\\)', '\\(\\varepsilon_0 Q_{int}\\)', '\\(Q_{int}\\,r^2\\)', 'Zero sempre'], correct: 0,
-      explain: '\\(\\Phi(\\vec E)=Q_{int}/\\varepsilon_0\\): dipende solo dalla carica racchiusa.' },
-    { q: 'Il potenziale di una carica puntiforme, rispetto al campo, varia:',
-      options: ['Come \\(1/r\\) (il campo come \\(1/r^2\\))', 'Come \\(1/r^2\\) (il campo come \\(1/r\\))', 'Come \\(r\\)', 'Allo stesso modo del campo'], correct: 0,
-      explain: '\\(V=kQ/r\\) va come \\(1/r\\); il campo \\(E=kQ/r^2\\) va come \\(1/r^2\\).' },
-    { q: 'In un collegamento in serie di resistori è costante:',
-      options: ['La corrente', 'La tensione su ciascuno', 'La potenza su ciascuno', 'La resistenza di ciascuno rispetto al totale'], correct: 0,
-      explain: 'In serie la stessa corrente attraversa tutti i componenti.' },
-    { q: 'La resistenza equivalente di due resistori in parallelo è:',
-      options: ['Minore della più piccola delle due', 'La somma delle due', 'La media aritmetica', 'Maggiore della più grande'], correct: 0,
-      explain: 'In parallelo \\(R_{eq}=\\dfrac{R_1R_2}{R_1+R_2}\\), sempre minore della più piccola.' },
-    { q: 'L\'effetto Joule consiste nella trasformazione di energia elettrica in:',
-      options: ['Calore', 'Energia luminosa pura', 'Energia chimica', 'Energia potenziale gravitazionale'], correct: 0,
-      explain: 'In un resistore la potenza \\(P=Ri^2\\) si dissipa interamente come calore.' },
-    { q: 'Nei metalli, scaldando il conduttore la sua resistenza:',
-      options: ['Aumenta', 'Diminuisce', 'Resta identica', 'Diventa negativa'], correct: 0,
-      explain: 'La resistività cresce con la temperatura, quindi \\(R=\\rho\\ell/A\\) aumenta.' },
-    { q: 'La tensione ai morsetti di un generatore reale vale:',
-      options: ['\\(\\varepsilon - r\\,i\\)', '\\(\\varepsilon + r\\,i\\)', '\\(\\varepsilon\\,r\\,i\\)', '\\(\\varepsilon/(r\\,i)\\)'], correct: 0,
-      explain: 'La resistenza interna provoca una caduta \\(r\\,i\\): \\(V_{morsetti}=\\varepsilon-r\\,i\\).' }
-  ],
-  problems: [
-    { q: 'Due cariche \\(q_1=q_2=1{,}0\\ \\mu\\mathrm{C}\\) distano \\(r=0{,}10\\ \\mathrm{m}\\). Forza di Coulomb (in N)?',
-      answer: 0.90, tol: 0.05, unit: 'N',
-      explain: '\\(F=8{,}99\\times10^9\\dfrac{(10^{-6})^2}{0{,}10^2}\\approx 0{,}90\\ \\mathrm{N}\\).' },
-    { q: 'Campo di una carica \\(Q=5{,}0\\ \\mu\\mathrm{C}\\) a \\(r=0{,}50\\ \\mathrm{m}\\) (in N/C).',
-      answer: 180000, tol: 8000, unit: 'N/C',
-      explain: '\\(E=8{,}99\\times10^9\\dfrac{5{,}0\\times10^{-6}}{0{,}50^2}\\approx 1{,}8\\times10^{5}\\ \\mathrm{N/C}\\).' },
-    { q: 'Un resistore \\(R=180\\ \\Omega\\) ha ai capi \\(V=9{,}0\\ \\mathrm{V}\\). Corrente in milliampere (mA)?',
-      answer: 50, tol: 2, unit: 'mA',
-      explain: '\\(i=V/R=9{,}0/180=0{,}05\\ \\mathrm{A}=50\\ \\mathrm{mA}\\).' },
-    { q: 'Due resistori \\(R_1=6{,}0\\ \\Omega\\) e \\(R_2=3{,}0\\ \\Omega\\) in parallelo. Resistenza equivalente (in Ω)?',
-      answer: 2, tol: 0.1, unit: 'Ω',
-      explain: '\\(R_{eq}=\\dfrac{6\\cdot 3}{6+3}=\\dfrac{18}{9}=2{,}0\\ \\Omega\\).' },
-    { q: 'Un resistore \\(R=12\\ \\Omega\\) ha ai capi \\(V=24\\ \\mathrm{V}\\). Potenza dissipata (in W)?',
-      answer: 48, tol: 2, unit: 'W',
-      explain: '\\(P=V^2/R=24^2/12=576/12=48\\ \\mathrm{W}\\).' }
-  ]
-};
-
-/* ---- Utility: mescola le opzioni mantenendo l'indice corretto ---- */
-function shuffleMC(item) {
-  const arr = item.options.map((text, i) => ({ text, ok: i === item.correct }));
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return { options: arr.map(o => o.text), correctIndex: arr.findIndex(o => o.ok) };
-}
-
-function parseNum(v) { return parseFloat(String(v).replace(',', '.')); }
-
-/* ---- Costruisce un quiz (immediato o finale) in un contenitore ---- */
-function buildQuizPane(mountId, data, mode) {
-  const mount = document.getElementById(mountId);
-  const nTheory = data.theory.length, nProblems = data.problems.length;
-  const total = nTheory + nProblems;
-
-  const ctx = { total, answered: 0, correct: 0, submitted: false, cards: [] };
-
-  mount.innerHTML = '';
-
-  const intro = document.createElement('p');
-  intro.className = 'pane-intro';
-  intro.innerHTML = mode === 'immediate'
-    ? `Quiz a correzione immediata: rispondi alla domanda mostrata e ricevi subito la valutazione, poi prosegui. Puoi tornare indietro con «Indietro». ${nTheory} domande di teoria e ${nProblems} problemi numerici.`
-    : `Rispondi alle domande scorrendole con «Avanti» e «Indietro»; poi premi «Correggi il quiz»: il punteggio e le spiegazioni compaiono solo alla fine. ${nTheory} domande di teoria e ${nProblems} problemi numerici.`;
+function buildQuiz(mountId, data){
+  const mount=document.getElementById(mountId);
+  const nT=data.theory.length, nP=data.problems.length, total=nT+nP;
+  const ctx={total, answered:0, correct:0, cards:[]};
+  mount.innerHTML='';
+  const intro=document.createElement('p'); intro.className='pane-intro';
+  intro.innerHTML=`Quiz di verifica del modulo, a correzione immediata: rispondi alla domanda mostrata e ricevi subito la valutazione, poi prosegui con «Avanti» (puoi tornare «Indietro»). ${nT} domande di teoria e ${nP} problemi. La posizione della risposta esatta è casuale.`;
   mount.appendChild(intro);
-
-  // Barra di stato (immediato: punteggio live; finale: avanzamento)
-  const bar = document.createElement('div');
-  bar.className = 'run-score';
-  if (mode === 'immediate') {
-    bar.innerHTML = `<span class="rs-main">Corrette: <span class="rs-num">0</span> / ${total}</span><span class="rs-sub">Completate: <span class="rs-done">0</span>/${total}</span>`;
-  } else {
-    bar.innerHTML = `<span class="rs-main">Risposte date: <span class="rs-num">0</span> / ${total}</span><span class="rs-sub">Il punteggio appare dopo la correzione</span>`;
-  }
+  const bar=document.createElement('div'); bar.className='run-score';
+  bar.innerHTML=`<span class="rs-main">Corrette: <span class="rs-num">0</span> / ${total}</span><span class="rs-sub">Completate: <span class="rs-done">0</span>/${total}</span>`;
   mount.appendChild(bar);
-  const rsNum = bar.querySelector('.rs-num');
-  const rsDone = bar.querySelector('.rs-done');
+  const rsNum=bar.querySelector('.rs-num'), rsDone=bar.querySelector('.rs-done');
+  function refresh(){ rsNum.textContent=ctx.correct; rsDone.textContent=ctx.answered; }
+  const wrap=document.createElement('div'); mount.appendChild(wrap);
+  let counter=0;
+  function badge(c){ return c==='p'?'<span class="q-cat p">Problema</span>':'<span class="q-cat t">Teoria</span>'; }
+  function addMC(item){ counter++; const w=document.createElement('div'); w.className='quiz-q qhidden';
+    const {options,correctIndex}=shuffleMC(item);
+    let html=`<div class="q-num">${badge('t')}Domanda ${counter} di ${total}</div><p style="margin:.3em 0 .6em"><strong>${item.q}</strong></p>`;
+    options.forEach((o,j)=> html+=`<div class="opt" data-opt="${j}">${o}</div>`); html+=`<div class="q-explain"></div>`;
+    w.innerHTML=html; const opts=w.querySelectorAll('.opt'), explain=w.querySelector('.q-explain');
+    const card={type:'mc',correctIndex,answered:false,wrap:w};
+    opts.forEach(o=> o.addEventListener('click',()=>{ if(card.answered) return; card.answered=true; const ch=+o.dataset.opt;
+      opts.forEach(x=>x.classList.add('locked')); opts[correctIndex].classList.add('correct');
+      if(ch!==correctIndex) o.classList.add('wrong'); const ok=ch===correctIndex;
+      explain.innerHTML=(ok?'<b>Corretto.</b> ':'<b>Non corretto.</b> ')+item.explain; explain.classList.add('show');
+      ctx.answered++; if(ok) ctx.correct++; refresh(); if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([explain]); }));
+    ctx.cards.push(card); wrap.appendChild(w); }
+  function addNum(item){ counter++; const w=document.createElement('div'); w.className='quiz-q qhidden';
+    let html=`<div class="q-num">${badge('p')}Domanda ${counter} di ${total}</div><p style="margin:.3em 0 .6em"><strong>${item.q}</strong></p>`;
+    html+=`<div class="answer-row"><input type="number" step="any" placeholder="Risposta (${item.unit})"><button class="btn primary" type="button">Verifica</button></div><div class="q-explain"></div>`;
+    w.innerHTML=html; const input=w.querySelector('input'), btn=w.querySelector('button'), explain=w.querySelector('.q-explain');
+    const card={type:'num',answered:false,wrap:w};
+    btn.addEventListener('click',()=>{ if(card.answered) return; const val=parseNum(input.value);
+      if(isNaN(val)){ explain.className='q-explain show'; explain.innerHTML='Inserisci un valore numerico per procedere.'; return; }
+      card.answered=true; input.disabled=true; btn.disabled=true; btn.style.opacity=.6;
+      const ok=Math.abs(val-item.answer)<=item.tol; explain.className='q-explain show';
+      explain.innerHTML=(ok?'<b>Corretto.</b> ':`<b>La risposta attesa è ${item.answer} ${item.unit}.</b> `)+item.explain;
+      ctx.answered++; if(ok) ctx.correct++; refresh(); if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([explain]); });
+    ctx.cards.push(card); wrap.appendChild(w); }
+  data.theory.forEach(addMC); data.problems.forEach(addNum);
 
-  function refreshBar() {
-    if (mode === 'immediate') {
-      rsNum.textContent = ctx.correct;
-      rsDone.textContent = ctx.answered;
-    } else {
-      rsNum.textContent = ctx.answered;
-    }
-  }
-
-  // Contenitore delle domande (una visibile alla volta)
-  const questionsWrap = document.createElement('div');
-  mount.appendChild(questionsWrap);
-
-  let counter = 0;
-  function catBadge(cat) {
-    return cat === 'p'
-      ? '<span class="q-cat p">Problema</span>'
-      : '<span class="q-cat t">Teoria</span>';
-  }
-
-  function addMC(item) {
-    counter++;
-    const wrap = document.createElement('div');
-    wrap.className = 'quiz-q qhidden';
-    const { options, correctIndex } = shuffleMC(item);
-    let html = `<div class="q-num">${catBadge('t')}Domanda ${counter} di ${total}</div><p style="margin:.3em 0 .6em"><strong>${item.q}</strong></p>`;
-    options.forEach((o, j) => { html += `<div class="opt" data-opt="${j}">${o}</div>`; });
-    html += `<div class="q-explain"></div>`;
-    wrap.innerHTML = html;
-    const opts = wrap.querySelectorAll('.opt');
-    const explain = wrap.querySelector('.q-explain');
-    const card = { type: 'mc', correctIndex, choice: null, answered: false, wrap, opts, explain, item };
-
-    opts.forEach(o => o.addEventListener('click', () => {
-      if (mode === 'immediate') {
-        if (card.answered) return;
-        card.answered = true;
-        card.choice = +o.dataset.opt;
-        opts.forEach(x => x.classList.add('locked'));
-        opts[correctIndex].classList.add('correct');
-        if (card.choice !== correctIndex) o.classList.add('wrong');
-        const ok = card.choice === correctIndex;
-        explain.innerHTML = (ok ? '<b>Corretto.</b> ' : '<b>Non corretto.</b> ') + item.explain;
-        explain.classList.add('show');
-        ctx.answered++; if (ok) ctx.correct++;
-        refreshBar();
-        if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([explain]);
-      } else {
-        if (ctx.submitted) return;
-        const was = card.choice !== null;
-        opts.forEach(x => x.classList.remove('sel'));
-        o.classList.add('sel');
-        card.choice = +o.dataset.opt;
-        if (!was) { ctx.answered++; refreshBar(); }
-      }
-    }));
-
-    ctx.cards.push(card);
-    questionsWrap.appendChild(wrap);
-  }
-
-  function addNum(item) {
-    counter++;
-    const wrap = document.createElement('div');
-    wrap.className = 'quiz-q qhidden';
-    let html = `<div class="q-num">${catBadge('p')}Domanda ${counter} di ${total}</div><p style="margin:.3em 0 .6em"><strong>${item.q}</strong></p>`;
-    html += `<div class="answer-row"><input type="number" step="any" placeholder="Risposta (${item.unit})">`;
-    if (mode === 'immediate') html += `<button class="btn primary" type="button">Verifica</button>`;
-    html += `</div><div class="q-explain"></div>`;
-    wrap.innerHTML = html;
-    const input = wrap.querySelector('input');
-    const explain = wrap.querySelector('.q-explain');
-    const card = { type: 'num', answered: false, wrap, input, explain, item };
-
-    if (mode === 'immediate') {
-      const btn = wrap.querySelector('button');
-      btn.addEventListener('click', () => {
-        if (card.answered) return;
-        const val = parseNum(input.value);
-        if (isNaN(val)) {
-          explain.className = 'q-explain show';
-          explain.innerHTML = 'Inserisci un valore numerico per procedere.';
-          if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([explain]);
-          return;
-        }
-        card.answered = true;
-        input.disabled = true; btn.disabled = true; btn.style.opacity = .6;
-        const ok = Math.abs(val - item.answer) <= item.tol;
-        explain.className = 'q-explain show';
-        explain.innerHTML = (ok ? '<b>Corretto.</b> ' : `<b>La risposta attesa è ${item.answer} ${item.unit}.</b> `) + item.explain;
-        ctx.answered++; if (ok) ctx.correct++;
-        refreshBar();
-        if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([explain]);
-      });
-    } else {
-      input.addEventListener('input', () => {
-        const has = input.value.trim() !== '';
-        if (has && !card.answered) { card.answered = true; ctx.answered++; refreshBar(); }
-        else if (!has && card.answered) { card.answered = false; ctx.answered--; refreshBar(); }
-      });
-    }
-
-    ctx.cards.push(card);
-    questionsWrap.appendChild(wrap);
-  }
-
-  // Prima le domande di teoria, poi i problemi numerici
-  data.theory.forEach(addMC);
-  data.problems.forEach(addNum);
-
-  // Barra di navigazione tra le domande
-  const nav = document.createElement('div');
-  nav.className = 'quiz-nav';
-  nav.innerHTML = `
-    <button class="btn" type="button" data-nav="prev">← Indietro</button>
-    <span class="q-indicator"></span>
-    <button class="btn" type="button" data-nav="next">Avanti →</button>`;
+  const nav=document.createElement('div'); nav.className='quiz-nav';
+  nav.innerHTML=`<button class="btn" type="button" data-nav="prev">← Indietro</button><span class="q-indicator"></span><button class="btn" type="button" data-nav="next">Avanti →</button>`;
   mount.appendChild(nav);
-  const prevBtn = nav.querySelector('[data-nav="prev"]');
-  const nextBtn = nav.querySelector('[data-nav="next"]');
-  const indicator = nav.querySelector('.q-indicator');
+  const prevBtn=nav.querySelector('[data-nav="prev"]'), nextBtn=nav.querySelector('[data-nav="next"]'), ind=nav.querySelector('.q-indicator');
+  let current=0;
+  function show(i){ current=Math.max(0,Math.min(total-1,i));
+    ctx.cards.forEach((c,idx)=> c.wrap.classList.toggle('qhidden', idx!==current));
+    ind.textContent=`Domanda ${current+1} / ${total}`; prevBtn.disabled=current===0; nextBtn.disabled=current===total-1; }
+  prevBtn.addEventListener('click',()=>show(current-1)); nextBtn.addEventListener('click',()=>show(current+1));
 
-  let current = 0;
-  function show(i) {
-    current = Math.max(0, Math.min(total - 1, i));
-    ctx.cards.forEach((c, idx) => c.wrap.classList.toggle('qhidden', idx !== current));
-    indicator.textContent = `Domanda ${current + 1} / ${total}`;
-    prevBtn.disabled = current === 0;
-    nextBtn.disabled = current === total - 1;
-  }
-  prevBtn.addEventListener('click', () => show(current - 1));
-  nextBtn.addEventListener('click', () => show(current + 1));
-
-  // Pulsanti azione (correggi / ricomincia)
-  const row = document.createElement('div');
-  row.className = 'btn-row';
-  row.style.cssText = 'justify-content:center;margin-top:16px';
-  if (mode === 'final') {
-    row.innerHTML = `<button class="btn primary" type="button" data-act="submit">Correggi il quiz</button><button class="btn" type="button" data-act="reset">Ricomincia</button>`;
-  } else {
-    row.innerHTML = `<button class="btn" type="button" data-act="reset">Ricomincia (rimescola)</button>`;
-  }
+  const row=document.createElement('div'); row.className='btn-row'; row.style.cssText='justify-content:center;margin-top:16px';
+  row.innerHTML=`<button class="btn" type="button" data-act="reset">Ricomincia (rimescola)</button>`;
   mount.appendChild(row);
-
-  // Sommario (solo finale)
-  let summary = null;
-  if (mode === 'final') {
-    summary = document.createElement('div');
-    summary.className = 'quiz-summary';
-    summary.innerHTML = `<div class="score"></div><p></p>`;
-    mount.appendChild(summary);
-  }
-
-  row.addEventListener('click', (e) => {
-    const act = e.target.dataset.act;
-    if (act === 'reset') { buildQuizPane(mountId, data, mode); }
-    else if (act === 'submit') { gradeFinal(); }
-  });
-
-  function gradeFinal() {
-    if (ctx.submitted) return;
-    ctx.submitted = true;
-    let score = 0;
-    ctx.cards.forEach(card => {
-      if (card.type === 'mc') {
-        card.opts.forEach(x => x.classList.add('locked'));
-        card.opts[card.correctIndex].classList.add('correct');
-        if (card.choice !== null && card.choice !== card.correctIndex) card.opts[card.choice].classList.add('wrong');
-        const ok = card.choice === card.correctIndex;
-        card.explain.innerHTML = (ok ? '<b>Corretto.</b> ' : '<b>Risposta esatta evidenziata sopra.</b> ') + card.item.explain;
-        card.explain.classList.add('show');
-        if (ok) score++;
-      } else {
-        const val = parseNum(card.input.value);
-        card.input.disabled = true;
-        const ok = !isNaN(val) && Math.abs(val - card.item.answer) <= card.item.tol;
-        card.explain.innerHTML = (ok ? '<b>Corretto.</b> ' : `<b>La risposta attesa è ${card.item.answer} ${card.item.unit}.</b> `) + card.item.explain;
-        card.explain.classList.add('show');
-        if (ok) score++;
-      }
-    });
-    if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([mount]);
-    const submitBtn = row.querySelector('[data-act="submit"]');
-    if (submitBtn) { submitBtn.disabled = true; }
-    const frac = score / total;
-    let msg;
-    if (frac === 1) msg = 'Padronanza completa: hai collegato bene teoria e calcolo su tutto il percorso. Ottimo lavoro.';
-    else if (frac >= 0.75) msg = 'Molto buono. Rivedi con calma le domande sbagliate (scorrile con «Indietro»): sei a un passo dalla piena padronanza.';
-    else if (frac >= 0.5) msg = 'Buona base. Le spiegazioni nelle singole domande chiariscono i punti mancati — è normale doverci tornare più volte.';
-    else msg = 'Nessun problema: questi argomenti richiedono più passaggi. Rileggi la teoria e i quiz di sezione, poi ritenta il riepilogo.';
-    summary.querySelector('.score').textContent = `${score} / ${total}`;
-    summary.querySelector('p').textContent = msg;
-    summary.classList.add('show');
-    summary.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
+  row.addEventListener('click',e=>{ if(e.target.dataset.act==='reset') buildQuiz(mountId,data); });
 
   show(0);
-  if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([mount]);
+  if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([mount]);
 }
-
-/* ---- Sotto-navigazione tra i quiz ---- */
-document.querySelectorAll('.subtab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    const target = tab.dataset.pane;
-    document.querySelectorAll('.subtab').forEach(t => t.classList.toggle('active', t === tab));
-    document.querySelectorAll('.quiz-pane').forEach(p => p.classList.toggle('active', p.id === target));
-  });
-});
-
-/* ---- Costruzione iniziale dei tre quiz ---- */
-buildQuizPane('pane-campo', QUIZ_CAMPO, 'immediate');
-buildQuizPane('pane-corrente', QUIZ_CORRENTE, 'immediate');
-buildQuizPane('pane-finale', QUIZ_FINALE, 'final');
+Object.keys(QUIZZES).forEach(id=> buildQuiz(id, QUIZZES[id]));
 </script>
 </body>
 </html>
