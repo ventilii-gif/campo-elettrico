@@ -752,6 +752,10 @@ input:focus, select:focus { outline:2px solid var(--accent-soft); border-color:v
     <button class="subtab" data-sub="ris-potenza">Potenza</button>
     <button class="subtab" data-sub="ris-joule">Energia e Joule</button>
     <button class="subtab" data-sub="ris-gen">Generatore reale</button>
+    <button class="subtab" data-sub="ris-cap">Capacità</button>
+    <button class="subtab" data-sub="ris-condpiano">Condensatore piano</button>
+    <button class="subtab" data-sub="ris-energiacap">Energia condensatore</button>
+    <button class="subtab" data-sub="ris-condrr">Condensatori serie/parallelo</button>
   </div>
   <div class="pane active" id="ris-coulomb"></div>
   <div class="pane" id="ris-campo"></div>
@@ -769,6 +773,10 @@ input:focus, select:focus { outline:2px solid var(--accent-soft); border-color:v
   <div class="pane" id="ris-potenza"></div>
   <div class="pane" id="ris-joule"></div>
   <div class="pane" id="ris-gen"></div>
+  <div class="pane" id="ris-cap"></div>
+  <div class="pane" id="ris-condpiano"></div>
+  <div class="pane" id="ris-energiacap"></div>
+  <div class="pane" id="ris-condrr"></div>
 </section>
 
 <div class="footer-note">
@@ -1477,6 +1485,7 @@ Object.keys(QUIZZES).forEach(id=> buildQuiz(id, QUIZZES[id]));
     lambda:[['C/m',1],['µC/m',1e-6],['nC/m',1e-9]],
     tempdelta:[['°C',1],['K',1]],
     alpha:[['1/°C',1],['1/K',1]],
+    cap:[['F',1],['mF',1e-3],['µF',1e-6],['nF',1e-9],['pF',1e-12]],
     none:[['',1]]
   };
   function unitFactor(kind,label){ const g=UNITS[kind]||UNITS.none; const f=g.find(u=>u[0]===label); return f?f[1]:1; }
@@ -1642,6 +1651,45 @@ Object.keys(QUIZZES).forEach(id=> buildQuiz(id, QUIZZES[id]));
         { label:'W = R·i²·t', general:'W = R\\,i^2\\,t',
           vars:[{key:'W',sym:'W',plain:'W — energia',kind:'energy'},{key:'R',sym:'R',plain:'R — resistenza',kind:'res'},{key:'i',sym:'i',plain:'i — corrente',kind:'current',def:'mA'},{key:'t',sym:'t',plain:'t — tempo',kind:'time',def:'s'}],
           targets:{ W:{tex:'W = R\\,i^2 t',fn:v=>v.R*v.i*v.i*v.t}, R:{tex:'R = \\dfrac{W}{i^2 t}',fn:v=>v.W/(v.i*v.i*v.t)}, i:{tex:'i = \\sqrt{\\dfrac{W}{R\\,t}}',fn:v=>Math.sqrt(v.W/(v.R*v.t))}, t:{tex:'t = \\dfrac{W}{R\\,i^2}',fn:v=>v.W/(v.R*v.i*v.i)} } }
+      ] },
+
+    { mount:'ris-cap', title:'Capacità di un condensatore', note:'La capacità è la carica accumulata per unità di tensione applicata.',
+      variants:[{ label:'', general:'C = \\dfrac{Q}{V}',
+        vars:[{key:'C',sym:'C',plain:'C — capacità',kind:'cap',def:'µF'},{key:'Q',sym:'Q',plain:'Q — carica',kind:'charge',def:'µC'},{key:'V',sym:'V',plain:'V — tensione',kind:'volt'}],
+        targets:{ C:{tex:'C = \\dfrac{Q}{V}',fn:v=>v.Q/v.V}, Q:{tex:'Q = C\\,V',fn:v=>v.C*v.V}, V:{tex:'V = \\dfrac{Q}{C}',fn:v=>v.Q/v.C} } }] },
+
+    { mount:'ris-condpiano', title:'Condensatore piano', note:'Due armature piane parallele separate dal vuoto o da un dielettrico di costante relativa \\(\\varepsilon_r\\) (nel vuoto \\(\\varepsilon_r=1\\)).',
+      variants:[{ label:'', general:'C = \\varepsilon_0\\,\\varepsilon_r\\,\\dfrac{A}{d}',
+        vars:[{key:'C',sym:'C',plain:'C — capacità',kind:'cap',def:'pF'},{key:'er',sym:'\\varepsilon_r',plain:'εr — cost. dielettrica',kind:'none'},
+              {key:'A',sym:'A',plain:'A — area armature',kind:'area',def:'cm²'},{key:'d',sym:'d',plain:'d — distanza',kind:'length',def:'mm'}],
+        targets:{ C:{tex:'C = \\varepsilon_0\\varepsilon_r\\dfrac{A}{d}',fn:v=>EPS0*v.er*v.A/v.d},
+          er:{tex:'\\varepsilon_r = \\dfrac{C\\,d}{\\varepsilon_0 A}',fn:v=>v.C*v.d/(EPS0*v.A)},
+          A:{tex:'A = \\dfrac{C\\,d}{\\varepsilon_0\\varepsilon_r}',fn:v=>v.C*v.d/(EPS0*v.er)},
+          d:{tex:'d = \\varepsilon_0\\varepsilon_r\\dfrac{A}{C}',fn:v=>EPS0*v.er*v.A/v.C} } }] },
+
+    { mount:'ris-energiacap', title:'Energia immagazzinata in un condensatore', note:'Le tre forme sono equivalenti tramite \\(Q = C\\,V\\).',
+      variants:[
+        { label:'W = ½·C·V²', general:'W = \\tfrac{1}{2}\\,C\\,V^2',
+          vars:[{key:'W',sym:'W',plain:'W — energia',kind:'energy'},{key:'C',sym:'C',plain:'C — capacità',kind:'cap',def:'µF'},{key:'V',sym:'V',plain:'V — tensione',kind:'volt'}],
+          targets:{ W:{tex:'W = \\tfrac12 C V^2',fn:v=>0.5*v.C*v.V*v.V}, C:{tex:'C = \\dfrac{2W}{V^2}',fn:v=>2*v.W/(v.V*v.V)}, V:{tex:'V = \\sqrt{\\dfrac{2W}{C}}',fn:v=>Math.sqrt(2*v.W/v.C)} } },
+        { label:'W = ½·Q·V', general:'W = \\tfrac{1}{2}\\,Q\\,V',
+          vars:[{key:'W',sym:'W',plain:'W — energia',kind:'energy'},{key:'Q',sym:'Q',plain:'Q — carica',kind:'charge',def:'µC'},{key:'V',sym:'V',plain:'V — tensione',kind:'volt'}],
+          targets:{ W:{tex:'W = \\tfrac12 Q V',fn:v=>0.5*v.Q*v.V}, Q:{tex:'Q = \\dfrac{2W}{V}',fn:v=>2*v.W/v.V}, V:{tex:'V = \\dfrac{2W}{Q}',fn:v=>2*v.W/v.Q} } },
+        { label:'W = Q²/2C', general:'W = \\dfrac{Q^2}{2\\,C}',
+          vars:[{key:'W',sym:'W',plain:'W — energia',kind:'energy'},{key:'Q',sym:'Q',plain:'Q — carica',kind:'charge',def:'µC'},{key:'C',sym:'C',plain:'C — capacità',kind:'cap',def:'µF'}],
+          targets:{ W:{tex:'W = \\dfrac{Q^2}{2C}',fn:v=>v.Q*v.Q/(2*v.C)}, Q:{tex:'Q = \\sqrt{2\\,W\\,C}',fn:v=>Math.sqrt(2*v.W*v.C)}, C:{tex:'C = \\dfrac{Q^2}{2W}',fn:v=>v.Q*v.Q/(2*v.W)} } }
+      ] },
+
+    { mount:'ris-condrr', title:'Condensatori in serie e in parallelo', note:'Attenzione: per i condensatori le regole sono opposte a quelle dei resistori (in parallelo si sommano, in serie si sommano i reciproci).',
+      variants:[
+        { label:'In parallelo', general:'C_{eq}=C_1+C_2',
+          vars:[{key:'Ceq',sym:'C_{eq}',plain:'C eq',kind:'cap',def:'µF'},{key:'C1',sym:'C_1',plain:'C₁',kind:'cap',def:'µF'},{key:'C2',sym:'C_2',plain:'C₂',kind:'cap',def:'µF'}],
+          targets:{ Ceq:{tex:'C_{eq}=C_1+C_2',fn:v=>v.C1+v.C2}, C1:{tex:'C_1=C_{eq}-C_2',fn:v=>v.Ceq-v.C2}, C2:{tex:'C_2=C_{eq}-C_1',fn:v=>v.Ceq-v.C1} } },
+        { label:'In serie', general:'\\dfrac{1}{C_{eq}}=\\dfrac{1}{C_1}+\\dfrac{1}{C_2}',
+          vars:[{key:'Ceq',sym:'C_{eq}',plain:'C eq',kind:'cap',def:'µF'},{key:'C1',sym:'C_1',plain:'C₁',kind:'cap',def:'µF'},{key:'C2',sym:'C_2',plain:'C₂',kind:'cap',def:'µF'}],
+          targets:{ Ceq:{tex:'C_{eq}=\\dfrac{C_1 C_2}{C_1+C_2}',fn:v=>v.C1*v.C2/(v.C1+v.C2)},
+            C1:{tex:'C_1=\\dfrac{C_{eq}C_2}{C_2-C_{eq}}',fn:v=>v.Ceq*v.C2/(v.C2-v.Ceq)},
+            C2:{tex:'C_2=\\dfrac{C_{eq}C_1}{C_1-C_{eq}}',fn:v=>v.Ceq*v.C1/(v.C1-v.Ceq)} } }
       ] }
   ];
 
