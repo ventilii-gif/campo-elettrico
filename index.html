@@ -1311,14 +1311,33 @@ const QUIZZES = {
       explain:'Le linee escono dalle cariche positive: \\(\\vec E\\) punta lontano dalla carica.' },
     { q:'Le linee del campo elettrico:',
       options:['Sono tangenti a E in ogni punto e non si incrociano','Si incrociano dove il campo è intenso','Escono dalle cariche negative','Sono sempre rette parallele'], correct:0,
-      explain:'La linea è tangente a \\(\\vec E\\) punto per punto e non si incrocia mai.' }
+      explain:'La linea è tangente a \\(\\vec E\\) punto per punto e non si incrocia mai.' },
+    { q:'Nella legge di Coulomb la costante \\(k\\) vale circa:',
+      options:['\\(8{,}99\\times10^9\\ \\mathrm{N\\,m^2/C^2}\\)','\\(9{,}0\\times10^{-9}\\)','\\(6{,}67\\times10^{-11}\\)','\\(1{,}6\\times10^{-19}\\)'], correct:0,
+      explain:'\\(k=1/(4\\pi\\varepsilon_0)\\approx8{,}99\\times10^9\\ \\mathrm{N\\,m^2/C^2}\\). \\(6{,}67\\times10^{-11}\\) è invece \\(G\\), la costante gravitazionale.' },
+    { q:'Se si triplica il valore di una delle due cariche, la forza di Coulomb:',
+      options:['Triplica','Si riduce a un terzo','Raddoppia','Non cambia'], correct:0,
+      explain:'La forza è direttamente proporzionale al prodotto delle cariche: triplicandone una, triplica.' },
+    { q:'Il campo elettrico è una grandezza:',
+      options:['Vettoriale (modulo, direzione e verso)','Scalare','Sempre positiva','Adimensionale'], correct:0,
+      explain:'\\(\\vec E\\) è un vettore: in ogni punto ha modulo, direzione e verso.' },
+    { q:'Rispetto alla forza gravitazionale, tra due particelle cariche la forza elettrica è:',
+      options:['Molto più intensa','Molto più debole','Esattamente uguale','Sempre attrattiva'], correct:0,
+      explain:'La costante \\(k\\) è enormemente maggiore di \\(G\\): l\'interazione elettrica domina su quella gravitazionale tra particelle cariche.' },
+    { q:'Dove le linee di campo sono più fitte, il campo elettrico è:',
+      options:['Più intenso','Più debole','Nullo','Sempre uniforme'], correct:0,
+      explain:'La densità delle linee indica l\'intensità del campo: più fitte ⇒ campo più intenso.' }
   ], problems:[
     { q:'Due cariche \\(q_1=2{,}0\\ \\mu\\mathrm C\\), \\(q_2=4{,}0\\ \\mu\\mathrm C\\) a \\(r=0{,}30\\ \\mathrm m\\). Forza (in N)?',
       answer:0.80, tol:0.05, unit:'N', explain:'\\(F=8{,}99\\times10^9\\dfrac{8\\times10^{-12}}{0{,}09}\\approx0{,}80\\ \\mathrm N\\).' },
     { q:'Campo di \\(Q=3{,}0\\ \\mu\\mathrm C\\) a \\(r=0{,}30\\ \\mathrm m\\) (in N/C)?',
-      answer:300000, tol:12000, unit:'N/C', explain:'\\(E\\approx3{,}0\\times10^5\\ \\mathrm{N/C}\\).' },
+      answer:300000, tol:12000, unit:'N/C', explain:'\\(E=k|Q|/r^2\\approx3{,}0\\times10^5\\ \\mathrm{N/C}\\).' },
     { q:'Forza su \\(q=5{,}0\\ \\mu\\mathrm C\\) in \\(E=3{,}0\\times10^4\\ \\mathrm{N/C}\\) (in N)?',
-      answer:0.15, tol:0.01, unit:'N', explain:'\\(F=qE=0{,}15\\ \\mathrm N\\).' }
+      answer:0.15, tol:0.01, unit:'N', explain:'\\(F=qE=0{,}15\\ \\mathrm N\\).' },
+    { q:'Due cariche \\(q_1=q_2=1{,}0\\ \\mu\\mathrm C\\) a \\(r=0{,}10\\ \\mathrm m\\). Forza (in N)?',
+      answer:0.90, tol:0.05, unit:'N', explain:'\\(F=8{,}99\\times10^9\\dfrac{(10^{-6})^2}{0{,}01}\\approx0{,}90\\ \\mathrm N\\).' },
+    { q:'Campo di \\(Q=10\\ \\mathrm{nC}\\) a \\(r=0{,}30\\ \\mathrm m\\) (in N/C)?',
+      answer:1000, tol:40, unit:'N/C', explain:'\\(E=8{,}99\\times10^9\\dfrac{10\\times10^{-9}}{0{,}09}\\approx1{,}0\\times10^3\\ \\mathrm{N/C}\\).' }
   ]},
   'quiz-m2':{ theory:[
     { q:'Il potenziale di una carica puntiforme varia con la distanza come:',
@@ -1335,14 +1354,33 @@ const QUIZZES = {
       explain:'\\(E=\\sigma/2\\varepsilon_0\\): costante.' },
     { q:'In un campo uniforme tra due lastre a distanza d, la relazione è:',
       options:['\\(E=\\Delta V/d\\)','\\(E=\\Delta V\\cdot d\\)','\\(E=d/\\Delta V\\)','\\(E=\\Delta V/d^2\\)'], correct:0,
-      explain:'\\(\\Delta V=E\\,d\\) ⇒ \\(E=\\Delta V/d\\).' }
+      explain:'\\(\\Delta V=E\\,d\\) ⇒ \\(E=\\Delta V/d\\).' },
+    { q:'Il potenziale elettrico si misura in:',
+      options:['Volt (V), cioè J/C','Newton (N)','Ampere (A)','Ohm (Ω)'], correct:0,
+      explain:'\\([V]=\\mathrm J/\\mathrm C=\\mathrm V\\).' },
+    { q:'Il lavoro per spostare una carica tra due punti del campo elettrostatico dipende:',
+      options:['Solo dalla differenza di potenziale tra i due punti','Dal percorso seguito','Dalla velocità della carica','Dal tempo impiegato'], correct:0,
+      explain:'Il campo elettrostatico è conservativo: il lavoro dipende solo dai punti iniziale e finale.' },
+    { q:'Il flusso del campo elettrico si misura in:',
+      options:['N·m²/C','N/C','C/m²','V/m'], correct:0,
+      explain:'\\(\\Phi=E\\cdot A\\): \\(\\mathrm{(N/C)\\cdot m^2 = N\\,m^2/C}\\).' },
+    { q:'Il campo di un filo rettilineo infinito varia con la distanza come:',
+      options:['\\(1/r\\)','\\(1/r^2\\)','\\(r\\)','Costante'], correct:0,
+      explain:'Da Gauss: \\(E=\\lambda/(2\\pi\\varepsilon_0 r)\\), quindi \\(\\propto1/r\\).' },
+    { q:'Le superfici equipotenziali sono:',
+      options:['Perpendicolari alle linee di campo','Parallele alle linee di campo','Sempre sferiche','Inclinate di 45°'], correct:0,
+      explain:'Il campo è perpendicolare alle equipotenziali; lungo di esse non si compie lavoro.' }
   ], problems:[
     { q:'Potenziale di \\(Q=8{,}0\\ \\mathrm{nC}\\) a \\(r=0{,}20\\ \\mathrm m\\) (in V)?',
       answer:360, tol:15, unit:'V', explain:'\\(V=kQ/r\\approx360\\ \\mathrm V\\).' },
     { q:'Campo uniforme con \\(\\Delta V=120\\ \\mathrm V\\), \\(d=0{,}030\\ \\mathrm m\\) (in V/m)?',
       answer:4000, tol:100, unit:'V/m', explain:'\\(E=120/0{,}030=4000\\ \\mathrm{V/m}\\).' },
     { q:'Flusso attraverso una superficie che racchiude \\(Q=1{,}0\\ \\mu\\mathrm C\\) (in N·m²/C)? (\\(\\varepsilon_0=8{,}85\\times10^{-12}\\))',
-      answer:113000, tol:5000, unit:'N·m²/C', explain:'\\(\\Phi=\\dfrac{1{,}0\\times10^{-6}}{8{,}85\\times10^{-12}}\\approx1{,}1\\times10^5\\).' }
+      answer:113000, tol:5000, unit:'N·m²/C', explain:'\\(\\Phi=\\dfrac{1{,}0\\times10^{-6}}{8{,}85\\times10^{-12}}\\approx1{,}1\\times10^5\\).' },
+    { q:'Potenziale di \\(Q=2{,}0\\ \\mathrm{nC}\\) a \\(r=0{,}10\\ \\mathrm m\\) (in V)?',
+      answer:180, tol:8, unit:'V', explain:'\\(V=8{,}99\\times10^9\\dfrac{2{,}0\\times10^{-9}}{0{,}10}\\approx180\\ \\mathrm V\\).' },
+    { q:'Tra due lastre \\(E=2000\\ \\mathrm{V/m}\\) distanti \\(d=0{,}050\\ \\mathrm m\\). Differenza di potenziale (in V)?',
+      answer:100, tol:4, unit:'V', explain:'\\(\\Delta V=E\\,d=2000\\cdot0{,}050=100\\ \\mathrm V\\).' }
   ]},
   'quiz-m3':{ theory:[
     { q:'L\'intensità di corrente elettrica è:',
@@ -1359,14 +1397,33 @@ const QUIZZES = {
       explain:'\\(R=\\rho\\ell/A\\): lungo e sottile ⇒ R grande.' },
     { q:'La potenza dissipata per effetto Joule può scriversi come:',
       options:['\\(R\\,i^2\\)','\\(R/i^2\\)','\\(i/R^2\\)','\\(R^2 i\\)'], correct:0,
-      explain:'\\(P=Vi=Ri^2=V^2/R\\).' }
+      explain:'\\(P=Vi=Ri^2=V^2/R\\).' },
+    { q:'L\'intensità di corrente si misura in:',
+      options:['Ampere (A), cioè C/s','Volt (V)','Ohm (Ω)','Watt (W)'], correct:0,
+      explain:'\\([i]=\\mathrm C/\\mathrm s=\\mathrm A\\).' },
+    { q:'Scaldando un filo metallico, la sua resistività:',
+      options:['Aumenta','Diminuisce','Resta costante','Si annulla'], correct:0,
+      explain:'Nei metalli \\(\\rho\\) cresce con la temperatura: gli ioni vibrano di più e ostacolano gli elettroni.' },
+    { q:'La densità di corrente J è definita come:',
+      options:['Corrente per unità di sezione, \\(i/A\\)','La carica totale','La tensione per lunghezza','La resistenza per area'], correct:0,
+      explain:'\\(J=i/A\\), in \\(\\mathrm{A/m^2}\\).' },
+    { q:'In un resistore percorso da corrente, l\'energia elettrica si trasforma prevalentemente in:',
+      options:['Calore (effetto Joule)','Energia chimica','Energia luminosa pura','Energia potenziale'], correct:0,
+      explain:'\\(P=Ri^2\\) si dissipa come calore: è l\'effetto Joule.' },
+    { q:'A parità di tensione, aumentando la resistenza la corrente:',
+      options:['Diminuisce','Aumenta','Resta uguale','Si annulla del tutto'], correct:0,
+      explain:'\\(i=V/R\\): a V fissa, se R cresce, i cala.' }
   ], problems:[
     { q:'Corrente con \\(V=12\\ \\mathrm V\\) e \\(R=48\\ \\Omega\\) (in A)?',
       answer:0.25, tol:0.01, unit:'A', explain:'\\(i=V/R=0{,}25\\ \\mathrm A\\).' },
     { q:'Corrente con \\(R=180\\ \\Omega\\) e \\(V=9{,}0\\ \\mathrm V\\), in milliampere (mA)?',
       answer:50, tol:2, unit:'mA', explain:'\\(i=9/180=0{,}05\\ \\mathrm A=50\\ \\mathrm{mA}\\).' },
     { q:'Potenza con \\(R=50\\ \\Omega\\) e \\(i=0{,}40\\ \\mathrm A\\) (in W)?',
-      answer:8, tol:0.3, unit:'W', explain:'\\(P=Ri^2=50\\cdot0{,}16=8{,}0\\ \\mathrm W\\).' }
+      answer:8, tol:0.3, unit:'W', explain:'\\(P=Ri^2=50\\cdot0{,}16=8{,}0\\ \\mathrm W\\).' },
+    { q:'Filo di rame (\\(\\rho=1{,}7\\times10^{-8}\\ \\Omega\\mathrm m\\)), \\(\\ell=10\\ \\mathrm m\\), \\(A=0{,}5\\ \\mathrm{mm^2}\\). Resistenza (in Ω)?',
+      answer:0.34, tol:0.02, unit:'Ω', explain:'\\(R=\\rho\\dfrac{\\ell}{A}=1{,}7\\times10^{-8}\\dfrac{10}{0{,}5\\times10^{-6}}\\approx0{,}34\\ \\Omega\\).' },
+    { q:'Potenza dissipata con \\(V=12\\ \\mathrm V\\) su \\(R=6{,}0\\ \\Omega\\) (in W)?',
+      answer:24, tol:1, unit:'W', explain:'\\(P=V^2/R=144/6=24\\ \\mathrm W\\).' }
   ]},
   'quiz-m4':{ theory:[
     { q:'In un collegamento in serie di resistori:',
@@ -1383,16 +1440,40 @@ const QUIZZES = {
       explain:'\\(V=\\varepsilon-r\\,i\\): più corrente ⇒ più caduta interna.' },
     { q:'L\'effetto Joule trasforma l\'energia elettrica in:',
       options:['Calore','Energia luminosa pura','Energia chimica','Energia gravitazionale'], correct:0,
-      explain:'In un resistore \\(P=Ri^2\\) si dissipa come calore.' }
+      explain:'In un resistore \\(P=Ri^2\\) si dissipa come calore.' },
+    { q:'La legge delle maglie di Kirchhoff afferma che lungo una maglia chiusa:',
+      options:['La somma algebrica delle d.d.p. è nulla','La somma delle correnti è nulla','La tensione è massima','La resistenza è costante'], correct:0,
+      explain:'Esprime la conservazione dell\'energia: \\(\\sum\\Delta V=0\\) lungo una maglia.' },
+    { q:'In un collegamento in parallelo, ai capi di ciascun resistore la tensione è:',
+      options:['La stessa per tutti','Diversa per ciascuno','Nulla','La somma delle tensioni'], correct:0,
+      explain:'In parallelo i componenti condividono gli stessi due nodi, quindi la stessa tensione.' },
+    { q:'La resistenza interna di un generatore è responsabile:',
+      options:['Della caduta di tensione ai morsetti sotto carico','Dell\'aumento della f.e.m.','Dell\'annullamento della corrente','Della carica del condensatore'], correct:0,
+      explain:'\\(V_{morsetti}=\\varepsilon-r\\,i\\): la resistenza interna provoca la caduta \\(r\\,i\\).' },
+    { q:'Due resistori uguali di resistenza R collegati in serie danno una resistenza equivalente:',
+      options:['\\(2R\\)','\\(R/2\\)','\\(R\\)','\\(R^2\\)'], correct:0,
+      explain:'In serie si sommano: \\(R+R=2R\\).' },
+    { q:'Aggiungendo un altro resistore in parallelo, la resistenza equivalente totale:',
+      options:['Diminuisce','Aumenta','Resta invariata','Raddoppia'], correct:0,
+      explain:'Ogni nuova via in parallelo offre un percorso in più alla corrente: la resistenza equivalente cala.' }
   ], problems:[
     { q:'Due resistori \\(150\\ \\Omega\\) e \\(250\\ \\Omega\\) in serie. Equivalente (in Ω)?',
       answer:400, tol:1, unit:'Ω', explain:'\\(R_{eq}=400\\ \\Omega\\).' },
     { q:'Due resistori \\(12\\ \\Omega\\) e \\(4{,}0\\ \\Omega\\) in parallelo. Equivalente (in Ω)?',
       answer:3, tol:0.1, unit:'Ω', explain:'\\(R_{eq}=\\dfrac{12\\cdot4}{16}=3{,}0\\ \\Omega\\).' },
     { q:'Batteria \\(\\varepsilon=6{,}0\\ \\mathrm V\\), \\(r=0{,}50\\ \\Omega\\), \\(R=2{,}5\\ \\Omega\\). Corrente (in A)?',
-      answer:2, tol:0.05, unit:'A', explain:'\\(i=6{,}0/3{,}0=2{,}0\\ \\mathrm A\\).' }
+      answer:2, tol:0.05, unit:'A', explain:'\\(i=6{,}0/3{,}0=2{,}0\\ \\mathrm A\\).' },
+    { q:'Due resistori uguali \\(R_1=R_2=100\\ \\Omega\\) in parallelo. Equivalente (in Ω)?',
+      answer:50, tol:1, unit:'Ω', explain:'\\(R_{eq}=\\dfrac{100\\cdot100}{200}=50\\ \\Omega\\).' },
+    { q:'Batteria \\(\\varepsilon=9{,}0\\ \\mathrm V\\), \\(r=1{,}0\\ \\Omega\\), eroga \\(i=1{,}0\\ \\mathrm A\\). Tensione ai morsetti (in V)?',
+      answer:8, tol:0.3, unit:'V', explain:'\\(V=\\varepsilon-r\\,i=9{,}0-1{,}0\\cdot1{,}0=8{,}0\\ \\mathrm V\\).' }
   ]}
 };
+
+const PRAISE_OK=['Esatto.','Corretto, molto bene.','Proprio così.','Giusto, ragionamento corretto.','Perfetto.'];
+const PRAISE_NO=['Non è questa, ma è un punto su cui è del tutto normale esitare.','Capita: vediamo insieme il perché.','Ci sei vicino, rileggi con calma la spiegazione.','Nessun problema, si chiarisce subito.'];
+const HINT_NUM=['Spesso è solo una potenza di dieci o un\'unità di misura da sistemare.','Ricontrolla le unità e riprova con fiducia.','Il procedimento può essere corretto anche se il numero non torna: rivedi i passaggi.'];
+function qPick(a){ return a[Math.floor(Math.random()*a.length)]; }
 
 function shuffleMC(item){ const arr=item.options.map((text,i)=>({text,ok:i===item.correct}));
   for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
@@ -1424,7 +1505,7 @@ function buildQuiz(mountId, data){
     opts.forEach(o=> o.addEventListener('click',()=>{ if(card.answered) return; card.answered=true; const ch=+o.dataset.opt;
       opts.forEach(x=>x.classList.add('locked')); opts[correctIndex].classList.add('correct');
       if(ch!==correctIndex) o.classList.add('wrong'); const ok=ch===correctIndex;
-      explain.innerHTML=(ok?'<b>Corretto.</b> ':'<b>Non corretto.</b> ')+item.explain; explain.classList.add('show');
+      explain.innerHTML=(ok?('<b>'+qPick(PRAISE_OK)+'</b> '):('<b>'+qPick(PRAISE_NO)+'</b> '))+item.explain; explain.classList.add('show');
       ctx.answered++; if(ok) ctx.correct++; refresh(); if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([explain]); }));
     ctx.cards.push(card); wrap.appendChild(w); }
   function addNum(item){ counter++; const w=document.createElement('div'); w.className='quiz-q qhidden';
@@ -1436,7 +1517,7 @@ function buildQuiz(mountId, data){
       if(isNaN(val)){ explain.className='q-explain show'; explain.innerHTML='Inserisci un valore numerico per procedere.'; return; }
       card.answered=true; input.disabled=true; btn.disabled=true; btn.style.opacity=.6;
       const ok=Math.abs(val-item.answer)<=item.tol; explain.className='q-explain show';
-      explain.innerHTML=(ok?'<b>Corretto.</b> ':`<b>La risposta attesa è ${item.answer} ${item.unit}.</b> `)+item.explain;
+      explain.innerHTML=(ok?('<b>'+qPick(PRAISE_OK)+'</b> '):(`<b>Ci sei vicino: la risposta attesa è ${item.answer} ${item.unit}.</b> `+qPick(HINT_NUM)+' '))+item.explain;
       ctx.answered++; if(ok) ctx.correct++; refresh(); if(window.MathJax&&MathJax.typesetPromise) MathJax.typesetPromise([explain]); });
     ctx.cards.push(card); wrap.appendChild(w); }
   data.theory.forEach(addMC); data.problems.forEach(addNum);
